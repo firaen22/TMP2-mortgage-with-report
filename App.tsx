@@ -107,7 +107,7 @@ const TRANSLATIONS = {
     feature_liquidity_title: "流動性與淨值",
     label_surrender_5: "第 5 年退保價值",
     label_net_equity_30: "第 30 年淨資產",
-    disclaimer: "免責聲明：本模擬僅供參考。預測回報基於假設表現及現行收費結構。實際結果將視乎基金表現及市場情況而定。過往表現並非未來結果的指標。",
+    disclaimer: "免責聲明：本模擬器僅供學習用途，不作為任何投資組合建議。預測回報基於假設表現及現行收費結構。實際結果將視乎基金表現及市場情況而定。過往表現並非未來結果的指標。",
     currency: "HKD",
     funds: {
       barings: "霸菱環球高收益債券基金",
@@ -128,6 +128,10 @@ const TRANSLATIONS = {
     table_mortgage: "按揭餘額",
     table_cash: "備用現金",
     table_net_equity: "淨資產",
+    disclaimer_popup_title: "重要提示",
+    disclaimer_popup_study: "本模擬器僅供學習用途。",
+    disclaimer_popup_not_recommend: "不作為任何投資組合建議或財務推薦。",
+    disclaimer_popup_btn: "我明白",
     generated_on: "報告生成日期: ",
   },
   en: {
@@ -176,7 +180,7 @@ const TRANSLATIONS = {
     feature_liquidity_title: "Liquidity & Net Worth",
     label_surrender_5: "Year 5 Surrender Value",
     label_net_equity_30: "Year 30 Net Equity",
-    disclaimer: "Disclaimer: This simulation is for illustrative purposes only. Projected returns are based on hypothetical performance and current fee structures. Actual results will vary based on fund performance and market conditions. Past performance is not indicative of future results.",
+    disclaimer: "Disclaimer: This simulator is for study purposes only and is NOT intended as portfolio advice. Projected returns are based on hypothetical performance and current fee structures. Actual results will vary based on fund performance and market conditions. Past performance is not indicative of future results.",
     currency: "HKD",
     funds: {
       barings: "Barings Global High Yield Bond",
@@ -197,6 +201,10 @@ const TRANSLATIONS = {
     table_mortgage: "Mortgage Balance",
     table_cash: "Reserve Cash",
     table_net_equity: "Net Equity",
+    disclaimer_popup_title: "Important Notice",
+    disclaimer_popup_study: "This simulator is for study purposes only.",
+    disclaimer_popup_not_recommend: "It is NOT intended as portfolio advice or financial recommendation.",
+    disclaimer_popup_btn: "I Understand",
     generated_on: "Generated on: ",
   }
 };
@@ -206,6 +214,7 @@ const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('zh');
   const [isDownloading, setIsDownloading] = useState(false);
   const [isReportVisible, setIsReportVisible] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
   const t = TRANSLATIONS[lang];
 
   // Input states as string | number to allow empty deletion
@@ -550,6 +559,35 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen text-slate-200 selection:bg-amber-900 selection:text-white relative">
+      {/* Disclaimer Modal */}
+      {showDisclaimer && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowDisclaimer(false)}></div>
+          <div className="relative bg-slate-900 border border-[#D4AF37]/50 p-8 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <AlertCircle className="text-[#D4AF37]" size={28} />
+              <h2 className="text-2xl font-serif text-white">{t.disclaimer_popup_title}</h2>
+            </div>
+            <div className="space-y-4 text-slate-300 mb-8">
+              <p className="flex items-start gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] mt-2 shrink-0"></span>
+                <span>{t.disclaimer_popup_study}</span>
+              </p>
+              <p className="flex items-start gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] mt-2 shrink-0"></span>
+                <span>{t.disclaimer_popup_not_recommend}</span>
+              </p>
+            </div>
+            <button
+              onClick={() => setShowDisclaimer(false)}
+              className="w-full py-3 bg-[#D4AF37] text-slate-900 font-bold uppercase tracking-widest hover:bg-[#D4AF37]/90 transition-all"
+            >
+              {t.disclaimer_popup_btn}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Navbar */}
       <nav className="border-b border-white/5 bg-slate-900/80 backdrop-blur-md sticky top-0 z-[40]">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
