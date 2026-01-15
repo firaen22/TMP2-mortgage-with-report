@@ -122,10 +122,12 @@ const TRANSLATIONS = {
     report_section_allocation: "資產配置分佈",
     report_section_mortgage: "按揭貸款詳情",
     report_section_cashflow: "每月現金流狀況",
-    report_section_projection: "長期回報預測 (10 - 30年)",
+    report_section_projection: "預期回報 (10 - 30年)",
     table_year: "年度",
-    table_net_equity: "淨資產 (HKD)",
-    table_roi: "總回報率 (ROI)",
+    table_asset: "收息資產",
+    table_mortgage: "按揭餘額",
+    table_cash: "備用現金",
+    table_net_equity: "淨資產",
     generated_on: "報告生成日期: ",
   },
   en: {
@@ -189,10 +191,12 @@ const TRANSLATIONS = {
     report_section_allocation: "Asset Allocation",
     report_section_mortgage: "Mortgage Details",
     report_section_cashflow: "Monthly Cash Flow Status",
-    report_section_projection: "Long-term Projection (10 - 30 Years)",
+    report_section_projection: "Expected Returns (10 - 30 Years)",
     table_year: "Year",
-    table_net_equity: "Net Equity (HKD)",
-    table_roi: "Total ROI",
+    table_asset: "Income Asset",
+    table_mortgage: "Mortgage Balance",
+    table_cash: "Reserve Cash",
+    table_net_equity: "Net Equity",
     generated_on: "Generated on: ",
   }
 };
@@ -256,6 +260,10 @@ const App: React.FC = () => {
 
   const incomeStats = useMemo(() => calculatePortfolioYield(incomeAllocations), [incomeAllocations]);
   const hedgeStats = useMemo(() => calculatePortfolioYield(hedgeAllocations), [hedgeAllocations]);
+
+  const overallYield = useMemo(() => {
+    return (allocationIncome * incomeStats.yield + (100 - allocationIncome) * hedgeStats.yield) / 100;
+  }, [allocationIncome, incomeStats.yield, hedgeStats.yield]);
 
   const allocationHedge = 100 - allocationIncome;
 
@@ -1066,6 +1074,11 @@ const App: React.FC = () => {
                   </div>
                 </div>
               </div>
+              {/* Average Yield Display */}
+              <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                <span className="text-sm text-slate-500 uppercase tracking-wider">{t.label_avg_yield}: </span>
+                <span className="text-xl font-bold text-[#D4AF37]">{overallYield.toFixed(2)}%</span>
+              </div>
             </div>
 
             {/* 2. Monthly Cash Flow */}
@@ -1119,20 +1132,23 @@ const App: React.FC = () => {
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-100 text-slate-600 font-bold">
                     <tr>
-                      <th className="px-2 py-2">{t.table_year}</th>
-                      <th className="px-2 py-2 text-right">{t.table_net_equity}</th>
-                      <th className="px-2 py-2 text-right">{t.table_roi}</th>
+                      <th className="px-1 py-2">{t.table_year}</th>
+                      <th className="px-1 py-2 text-right">{t.table_asset}</th>
+                      <th className="px-1 py-2 text-right">{t.table_mortgage}</th>
+                      <th className="px-1 py-2 text-right">{t.table_cash}</th>
+                      <th className="px-1 py-2 text-right">{t.table_net_equity}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {result.yearlyData.slice(0, 15).map(data => {
-                      const roi = ((data.netEquity - result.investedAmount) / result.investedAmount) * 100;
                       return (
                         <tr key={data.year} className="hover:bg-slate-50">
-                          <td className="px-2 py-1.5 font-medium text-slate-800">{data.year}</td>
-                          <td className="px-2 py-1.5 text-right text-slate-700 font-mono">{formatCurrency(data.netEquity, true)}</td>
-                          <td className={`px-2 py-1.5 text-right font-mono font-bold ${roi >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {roi > 0 ? '+' : ''}{roi.toFixed(1)}%
+                          <td className="px-1 py-1.5 font-medium text-slate-800">{data.year}</td>
+                          <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, true)}</td>
+                          <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, true)}</td>
+                          <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, true)}</td>
+                          <td className="px-1 py-1.5 text-right font-mono font-bold text-slate-900 text-[9px]">
+                            {formatCurrency(data.netEquity, true)}
                           </td>
                         </tr>
                       );
@@ -1144,20 +1160,23 @@ const App: React.FC = () => {
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-100 text-slate-600 font-bold">
                     <tr>
-                      <th className="px-2 py-2">{t.table_year}</th>
-                      <th className="px-2 py-2 text-right">{t.table_net_equity}</th>
-                      <th className="px-2 py-2 text-right">{t.table_roi}</th>
+                      <th className="px-1 py-2">{t.table_year}</th>
+                      <th className="px-1 py-2 text-right">{t.table_asset}</th>
+                      <th className="px-1 py-2 text-right">{t.table_mortgage}</th>
+                      <th className="px-1 py-2 text-right">{t.table_cash}</th>
+                      <th className="px-1 py-2 text-right">{t.table_net_equity}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {result.yearlyData.slice(15, 30).map(data => {
-                      const roi = ((data.netEquity - result.investedAmount) / result.investedAmount) * 100;
                       return (
                         <tr key={data.year} className="hover:bg-slate-50">
-                          <td className="px-2 py-1.5 font-medium text-slate-800">{data.year}</td>
-                          <td className="px-2 py-1.5 text-right text-slate-700 font-mono">{formatCurrency(data.netEquity, true)}</td>
-                          <td className={`px-2 py-1.5 text-right font-mono font-bold ${roi >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {roi > 0 ? '+' : ''}{roi.toFixed(1)}%
+                          <td className="px-1 py-1.5 font-medium text-slate-800">{data.year}</td>
+                          <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, true)}</td>
+                          <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, true)}</td>
+                          <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, true)}</td>
+                          <td className="px-1 py-1.5 text-right font-mono font-bold text-slate-900 text-[9px]">
+                            {formatCurrency(data.netEquity, true)}
                           </td>
                         </tr>
                       );
