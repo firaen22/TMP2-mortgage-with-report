@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { 
-  Calculator, 
-  TrendingUp, 
-  ShieldCheck, 
-  PieChart as PieIcon, 
+import {
+  Calculator,
+  TrendingUp,
+  ShieldCheck,
+  PieChart as PieIcon,
   AlertCircle,
   Briefcase,
   Home,
@@ -18,15 +18,15 @@ import {
   DollarSign,
   FileText
 } from 'lucide-react';
-import { 
-  ComposedChart, 
+import {
+  ComposedChart,
   Line,
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
   Legend,
   Pie,
   Cell
@@ -209,9 +209,9 @@ const App: React.FC = () => {
   const [mortgageLTV, setMortgageLTV] = useState<number | string>(DEFAULTS.MORTGAGE_LTV);
   const [mortgageRate, setMortgageRate] = useState<number | string>(DEFAULTS.MORTGAGE_RATE);
   const [mortgageTenure, setMortgageTenure] = useState<number | string>(DEFAULTS.MORTGAGE_TENURE);
-  
+
   const [reserveCashPercent, setReserveCashPercent] = useState<number>(0);
-  
+
   // Tab state for switching between Income and Hedge configuration
   const [activeTab, setActiveTab] = useState<'income' | 'hedge'>('income');
 
@@ -235,7 +235,7 @@ const App: React.FC = () => {
   const [allocationIncome, setAllocationIncome] = useState<number>(DEFAULTS.ALLOCATION_INCOME);
 
   // --- Derived State & Calculations ---
-  
+
   // Helper to prevent NaN issues
   const safeNumber = (val: string | number): number => {
     if (val === '') return 0;
@@ -273,15 +273,15 @@ const App: React.FC = () => {
     // Check if it's a valid number format
     const num = parseFloat(val);
     if (!isNaN(num)) {
-       // Only update if within 0-100 range (optional constraint, can relax if needed)
-       // Relaxing constraint slightly to allow typing "100" naturally without getting stuck at "10" if logic was strict
-       if (num >= 0 && num <= 100) {
-          if (type === 'income') {
-            setIncomeAllocations(prev => ({ ...prev, [id]: val })); // Keep as string to preserve "0." etc
-          } else {
-            setHedgeAllocations(prev => ({ ...prev, [id]: val }));
-          }
-       }
+      // Only update if within 0-100 range (optional constraint, can relax if needed)
+      // Relaxing constraint slightly to allow typing "100" naturally without getting stuck at "10" if logic was strict
+      if (num >= 0 && num <= 100) {
+        if (type === 'income') {
+          setIncomeAllocations(prev => ({ ...prev, [id]: val })); // Keep as string to preserve "0." etc
+        } else {
+          setHedgeAllocations(prev => ({ ...prev, [id]: val }));
+        }
+      }
     }
   };
 
@@ -291,7 +291,7 @@ const App: React.FC = () => {
     const valLTV = safeNumber(mortgageLTV);
     const valRate = safeNumber(mortgageRate);
     const valTenure = safeNumber(mortgageTenure);
-    
+
     // 1. Mortgage Basics
     const loanAmount = valProperty * (valLTV / 100);
     const monthlyRate = (valRate / 100) / 12;
@@ -302,13 +302,13 @@ const App: React.FC = () => {
     if (loanAmount > 0 && numPayments > 0 && monthlyRate > 0) {
       monthlyMortgage = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
     } else if (loanAmount > 0 && numPayments > 0 && monthlyRate === 0) {
-       monthlyMortgage = loanAmount / numPayments;
+      monthlyMortgage = loanAmount / numPayments;
     }
 
     // 2. Investment Split
     const reserveCash = loanAmount * (reserveCashPercent / 100);
     const investedAmount = loanAmount - reserveCash;
-    
+
     const initialIncomeAV = investedAmount * (allocationIncome / 100);
     const initialHedgeAV = investedAmount * (allocationHedge / 100);
 
@@ -321,12 +321,12 @@ const App: React.FC = () => {
     // 5. 30-Year Simulation
     const yearlyData: SimulationYear[] = [];
     let currentHedgeAV = initialHedgeAV;
-    const currentIncomeAV = initialIncomeAV; 
+    const currentIncomeAV = initialIncomeAV;
     let currentMortgageBalance = loanAmount;
 
     for (let year = 1; year <= 30; year++) {
       const totalAVStart = currentIncomeAV + currentHedgeAV;
-      
+
       // Fees: Years 1-5: 2.35%, Years 6+: 1.0% (Based on Account Value)
       const feeRate = year <= 5 ? DEFAULTS.FEE_RATE_INITIAL : DEFAULTS.FEE_RATE_ONGOING;
       const totalFees = totalAVStart * (feeRate / 100);
@@ -337,21 +337,21 @@ const App: React.FC = () => {
       // Amortization
       for (let m = 0; m < 12; m++) {
         if (currentMortgageBalance > 0) {
-           // Handle principal reduction
-           if (numPayments > 0) {
-              const interest = currentMortgageBalance * monthlyRate;
-              const principal = monthlyMortgage - interest;
-              currentMortgageBalance -= principal;
-           }
-           if (currentMortgageBalance < 0) currentMortgageBalance = 0;
+          // Handle principal reduction
+          if (numPayments > 0) {
+            const interest = currentMortgageBalance * monthlyRate;
+            const principal = monthlyMortgage - interest;
+            currentMortgageBalance -= principal;
+          }
+          if (currentMortgageBalance < 0) currentMortgageBalance = 0;
         }
       }
 
       // Surrender Value (2 year penalty)
       // Note: Reserve Cash is assumed to be liquid and penalty-free
       const isSurrenderPenalty = year <= 2;
-      const portfolioSurrenderValue = isSurrenderPenalty 
-        ? (currentIncomeAV + currentHedgeAV) * 0.9 
+      const portfolioSurrenderValue = isSurrenderPenalty
+        ? (currentIncomeAV + currentHedgeAV) * 0.9
         : (currentIncomeAV + currentHedgeAV);
       const surrenderValue = portfolioSurrenderValue + reserveCash;
 
@@ -361,7 +361,7 @@ const App: React.FC = () => {
       yearlyData.push({
         year,
         incomeAV: currentIncomeAV,
-        hedgeAV: currentHedgeAV > 0 ? currentHedgeAV : 0, 
+        hedgeAV: currentHedgeAV > 0 ? currentHedgeAV : 0,
         reserveCash,
         totalAV,
         surrenderValue,
@@ -397,7 +397,7 @@ const App: React.FC = () => {
     })).filter(item => item.value > 0);
   }, [hedgeAllocations, t.funds]);
 
-  const projectionRows = [10, 15, 20, 25, 30];
+  // Data Prepared directly from result.yearlyData
 
   // --- PDF Generation ---
   const handleDownloadPDF = async () => {
@@ -424,15 +424,15 @@ const App: React.FC = () => {
         });
 
         const imgData = canvas.toDataURL('image/png');
-        
+
         // Use A4 Portrait
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
-        
+
         const imgWidth = canvas.width;
         const imgHeight = canvas.height;
-        
+
         // Calculate ratio to fit width exactly
         const ratio = pdfWidth / imgWidth;
         const finalWidth = pdfWidth;
@@ -452,10 +452,10 @@ const App: React.FC = () => {
   };
 
   // --- Formatters ---
-  const formatCurrency = (val: number, compact = false) => 
-    new Intl.NumberFormat(lang === 'zh' ? 'zh-HK' : 'en-US', { 
-      style: 'currency', 
-      currency: 'HKD', 
+  const formatCurrency = (val: number, compact = false) =>
+    new Intl.NumberFormat(lang === 'zh' ? 'zh-HK' : 'en-US', {
+      style: 'currency',
+      currency: 'HKD',
       maximumFractionDigits: 0,
       notation: compact ? 'compact' : 'standard'
     }).format(val);
@@ -484,38 +484,39 @@ const App: React.FC = () => {
             const inputValue = currentVal === undefined ? 0 : currentVal;
 
             return (
-            <div key={fund.id} className="text-sm">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-slate-200 font-light">
-                  {/*@ts-ignore*/}
-                  {t.funds[fund.id] || fund.name}
-                </span>
-                <span className="text-xs text-slate-400 border border-slate-700 px-1.5">{fund.yield}%</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="100" 
-                  value={safeNumber(inputValue)}
-                  onChange={(e) => handleAllocationChange(activeTab, fund.id, e.target.value)}
-                  className={`flex-1 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full ${isIncome ? '[&::-webkit-slider-thumb]:bg-emerald-500' : '[&::-webkit-slider-thumb]:bg-indigo-500'}`}
-                />
-                <div className="relative w-12">
-                  <input 
-                    type="number"
+              <div key={fund.id} className="text-sm">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-slate-200 font-light">
+                    {/*@ts-ignore*/}
+                    {t.funds[fund.id] || fund.name}
+                  </span>
+                  <span className="text-xs text-slate-400 border border-slate-700 px-1.5">{fund.yield}%</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
                     min="0"
                     max="100"
-                    value={inputValue}
+                    value={safeNumber(inputValue)}
                     onChange={(e) => handleAllocationChange(activeTab, fund.id, e.target.value)}
-                    className={`w-full text-right bg-transparent border-b border-slate-600 text-slate-200 text-xs py-0.5 focus:outline-none focus:border-[${COLORS.GOLD}]`}
+                    className={`flex-1 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full ${isIncome ? '[&::-webkit-slider-thumb]:bg-emerald-500' : '[&::-webkit-slider-thumb]:bg-indigo-500'}`}
                   />
+                  <div className="relative w-12">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={inputValue}
+                      onChange={(e) => handleAllocationChange(activeTab, fund.id, e.target.value)}
+                      className={`w-full text-right bg-transparent border-b border-slate-600 text-slate-200 text-xs py-0.5 focus:outline-none focus:border-[${COLORS.GOLD}]`}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )})}
+            )
+          })}
         </div>
-         <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+        <div className="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
           <span className="text-xs text-slate-400 uppercase tracking-widest">{t.label_avg_yield}</span>
           <span className={`text-lg font-serif ${activeColor}`}>{stats.yield.toFixed(2)}%</span>
         </div>
@@ -540,9 +541,9 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            
+
             {/* Download PDF Button */}
-            <button 
+            <button
               onClick={handleDownloadPDF}
               disabled={isDownloading}
               className="hidden md:flex items-center gap-2 px-3 py-1.5 border border-[#D4AF37]/50 rounded text-xs font-medium text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -552,7 +553,7 @@ const App: React.FC = () => {
             </button>
 
             {/* Language Switcher */}
-            <button 
+            <button
               onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
               className="flex items-center gap-2 px-3 py-1.5 border border-slate-700 rounded text-xs font-light hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all"
             >
@@ -565,36 +566,36 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        
+
         {/* Mobile Download Button */}
-         <button 
-            onClick={handleDownloadPDF}
-            disabled={isDownloading}
-            className="md:hidden w-full mb-6 flex items-center justify-center gap-2 px-4 py-3 border border-[#D4AF37]/50 rounded-lg text-sm font-medium text-[#D4AF37] bg-[#D4AF37]/10 disabled:opacity-50"
-          >
-            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            <span>{isDownloading ? t.btn_generating : t.btn_download}</span>
-          </button>
+        <button
+          onClick={handleDownloadPDF}
+          disabled={isDownloading}
+          className="md:hidden w-full mb-6 flex items-center justify-center gap-2 px-4 py-3 border border-[#D4AF37]/50 rounded-lg text-sm font-medium text-[#D4AF37] bg-[#D4AF37]/10 disabled:opacity-50"
+        >
+          {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+          <span>{isDownloading ? t.btn_generating : t.btn_download}</span>
+        </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* LEFT: Inputs */}
           <div className="lg:col-span-4 space-y-6">
-            
+
             {/* 1. Property Inputs */}
             <GlassCard className="p-6">
               <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
                 <Home className="w-5 h-5 text-[#D4AF37]" />
                 <h2 className="font-serif text-lg tracking-wide text-slate-100">{t.card_property}</h2>
               </div>
-              
+
               <div className="space-y-6">
                 <div className="group">
                   <label className="block text-xs uppercase tracking-wider text-slate-500 mb-2 group-focus-within:text-[#D4AF37] transition-colors">{t.label_valuation}</label>
                   <div className="relative">
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-500 text-lg font-serif">{t.currency}</span>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={propertyValue}
                       onChange={(e) => setPropertyValue(e.target.value)}
                       className="w-full pl-12 bg-transparent border-b border-slate-700 py-2 text-xl font-serif text-slate-100 focus:outline-none focus:border-[#D4AF37] transition-all"
@@ -605,8 +606,8 @@ const App: React.FC = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="col-span-1">
                     <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-2 truncate" title={t.label_ltv}>{t.label_ltv}</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={mortgageLTV}
                       onChange={(e) => setMortgageLTV(e.target.value)}
                       className="w-full bg-slate-900/50 border border-slate-700 px-2 py-2 text-slate-100 focus:outline-none focus:border-[#D4AF37]"
@@ -614,8 +615,8 @@ const App: React.FC = () => {
                   </div>
                   <div className="col-span-1">
                     <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-2 truncate" title={t.label_rate}>{t.label_rate}</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       step="0.1"
                       value={mortgageRate}
                       onChange={(e) => setMortgageRate(e.target.value)}
@@ -624,8 +625,8 @@ const App: React.FC = () => {
                   </div>
                   <div className="col-span-1">
                     <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-2 truncate" title={t.label_tenure}>{t.label_tenure}</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={mortgageTenure}
                       onChange={(e) => setMortgageTenure(e.target.value)}
                       className="w-full bg-slate-900/50 border border-slate-700 px-2 py-2 text-slate-100 focus:outline-none focus:border-[#D4AF37]"
@@ -634,41 +635,41 @@ const App: React.FC = () => {
                 </div>
 
                 <div>
-                   <label className="block text-xs uppercase tracking-wider text-slate-500 mb-3">{t.label_reserve}</label>
-                   <div className="flex items-center gap-4">
-                     <input 
-                        type="range" 
-                        min="0" 
-                        max="50" 
-                        value={reserveCashPercent}
-                        onChange={(e) => setReserveCashPercent(Number(e.target.value))}
-                        className="flex-1 h-0.5 bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#D4AF37] [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:rotate-45"
-                      />
-                      <span className="font-serif text-[#D4AF37]">{reserveCashPercent}%</span>
-                   </div>
-                   <p className="text-right text-xs text-slate-500 mt-2">{t.label_cash}: {formatCurrency(result.reserveCash)}</p>
+                  <label className="block text-xs uppercase tracking-wider text-slate-500 mb-3">{t.label_reserve}</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max="50"
+                      value={reserveCashPercent}
+                      onChange={(e) => setReserveCashPercent(Number(e.target.value))}
+                      className="flex-1 h-0.5 bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#D4AF37] [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:rotate-45"
+                    />
+                    <span className="font-serif text-[#D4AF37]">{reserveCashPercent}%</span>
+                  </div>
+                  <p className="text-right text-xs text-slate-500 mt-2">{t.label_cash}: {formatCurrency(result.reserveCash)}</p>
                 </div>
               </div>
             </GlassCard>
 
-             {/* 2. Capital Overview (Moved Up) */}
-             <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 p-6">
-                <h3 className="text-xs font-serif text-[#D4AF37] uppercase tracking-widest mb-4">{t.card_summary}</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">{t.label_loan}</span>
-                    <span className="text-slate-200">{formatCurrency(result.loanAmount)}</span>
-                  </div>
-                   <div className="flex justify-between border-t border-[#D4AF37]/10 pt-2">
-                    <span className="text-slate-400">{t.label_reserve_cash}</span>
-                    <span className="text-slate-200">{formatCurrency(result.reserveCash)}</span>
-                  </div>
-                  <div className="flex justify-between border-t border-[#D4AF37]/10 pt-2">
-                    <span className="text-slate-400">{t.label_invested}</span>
-                    <span className="text-[#D4AF37]">{formatCurrency(result.investedAmount)}</span>
-                  </div>
+            {/* 2. Capital Overview (Moved Up) */}
+            <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 p-6">
+              <h3 className="text-xs font-serif text-[#D4AF37] uppercase tracking-widest mb-4">{t.card_summary}</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">{t.label_loan}</span>
+                  <span className="text-slate-200">{formatCurrency(result.loanAmount)}</span>
                 </div>
-             </div>
+                <div className="flex justify-between border-t border-[#D4AF37]/10 pt-2">
+                  <span className="text-slate-400">{t.label_reserve_cash}</span>
+                  <span className="text-slate-200">{formatCurrency(result.reserveCash)}</span>
+                </div>
+                <div className="flex justify-between border-t border-[#D4AF37]/10 pt-2">
+                  <span className="text-slate-400">{t.label_invested}</span>
+                  <span className="text-[#D4AF37]">{formatCurrency(result.investedAmount)}</span>
+                </div>
+              </div>
+            </div>
 
             {/* 3. Allocation Panel */}
             <GlassCard className="p-6">
@@ -679,46 +680,46 @@ const App: React.FC = () => {
 
               {/* Slider Section */}
               <div className="mb-6">
-                 <div className="flex-1 space-y-3">
-                   <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-emerald-400">{t.label_income_alloc} ({allocationIncome}%)</span>
-                        <span className="text-indigo-400">{t.label_hedge_alloc} ({allocationHedge}%)</span>
-                      </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        step="5"
-                        value={allocationIncome}
-                        onChange={(e) => setAllocationIncome(Number(e.target.value))}
-                        className="w-full h-1 bg-gradient-to-r from-emerald-900 to-indigo-900 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-slate-200 [&::-webkit-slider-thumb]:rounded-full"
-                      />
-                   </div>
-                   <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                      <span>{formatCurrency(result.investedAmount * (allocationIncome / 100), true)}</span>
-                      <span>{formatCurrency(result.investedAmount * (allocationHedge / 100), true)}</span>
-                   </div>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-emerald-400">{t.label_income_alloc} ({allocationIncome}%)</span>
+                      <span className="text-indigo-400">{t.label_hedge_alloc} ({allocationHedge}%)</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={allocationIncome}
+                      onChange={(e) => setAllocationIncome(Number(e.target.value))}
+                      className="w-full h-1 bg-gradient-to-r from-emerald-900 to-indigo-900 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-slate-200 [&::-webkit-slider-thumb]:rounded-full"
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                    <span>{formatCurrency(result.investedAmount * (allocationIncome / 100), true)}</span>
+                    <span>{formatCurrency(result.investedAmount * (allocationHedge / 100), true)}</span>
+                  </div>
                 </div>
               </div>
 
               {/* Portfolio Tabs */}
               <div>
-                 <div className="grid grid-cols-2 gap-px bg-slate-700 border border-slate-700 mb-4">
-                    <button
-                      onClick={() => setActiveTab('income')}
-                      className={`py-2 text-xs uppercase tracking-wider transition-all ${activeTab === 'income' ? 'bg-slate-800 text-emerald-400' : 'bg-slate-900 text-slate-500 hover:text-slate-300'}`}
-                    >
-                      {t.tab_income}
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('hedge')}
-                      className={`py-2 text-xs uppercase tracking-wider transition-all ${activeTab === 'hedge' ? 'bg-slate-800 text-indigo-400' : 'bg-slate-900 text-slate-500 hover:text-slate-300'}`}
-                    >
-                      {t.tab_hedge}
-                    </button>
-                 </div>
-                 {renderFundList()}
+                <div className="grid grid-cols-2 gap-px bg-slate-700 border border-slate-700 mb-4">
+                  <button
+                    onClick={() => setActiveTab('income')}
+                    className={`py-2 text-xs uppercase tracking-wider transition-all ${activeTab === 'income' ? 'bg-slate-800 text-emerald-400' : 'bg-slate-900 text-slate-500 hover:text-slate-300'}`}
+                  >
+                    {t.tab_income}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('hedge')}
+                    className={`py-2 text-xs uppercase tracking-wider transition-all ${activeTab === 'hedge' ? 'bg-slate-800 text-indigo-400' : 'bg-slate-900 text-slate-500 hover:text-slate-300'}`}
+                  >
+                    {t.tab_hedge}
+                  </button>
+                </div>
+                {renderFundList()}
               </div>
             </GlassCard>
 
@@ -726,42 +727,42 @@ const App: React.FC = () => {
 
           {/* RIGHT: Results */}
           <div className="lg:col-span-8 space-y-6">
-            
+
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <GlassCard className="p-5 flex flex-col justify-between h-32 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-all group-hover:bg-emerald-500/20"></div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400">{t.kpi_income}</p>
-                    <p className="text-xs text-emerald-500 mt-1">{t.label_yield_rate} {incomeStats.yield.toFixed(2)}%</p>
-                  </div>
-                  <p className="text-2xl font-serif text-emerald-400">{formatCurrency(result.monthlyDividend)}</p>
-               </GlassCard>
+              <GlassCard className="p-5 flex flex-col justify-between h-32 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-all group-hover:bg-emerald-500/20"></div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-slate-400">{t.kpi_income}</p>
+                  <p className="text-xs text-emerald-500 mt-1">{t.label_yield_rate} {incomeStats.yield.toFixed(2)}%</p>
+                </div>
+                <p className="text-2xl font-serif text-emerald-400">{formatCurrency(result.monthlyDividend)}</p>
+              </GlassCard>
 
-               <GlassCard className="p-5 flex flex-col justify-between h-32 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-all group-hover:bg-rose-500/20"></div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400">{t.kpi_mortgage}</p>
-                    <p className="text-xs text-rose-500 mt-1">{t.label_rate_simple} {safeNumber(mortgageRate)}%</p>
-                  </div>
-                  <p className="text-2xl font-serif text-rose-400">-{formatCurrency(result.monthlyMortgage)}</p>
-               </GlassCard>
+              <GlassCard className="p-5 flex flex-col justify-between h-32 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-all group-hover:bg-rose-500/20"></div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-slate-400">{t.kpi_mortgage}</p>
+                  <p className="text-xs text-rose-500 mt-1">{t.label_rate_simple} {safeNumber(mortgageRate)}%</p>
+                </div>
+                <p className="text-2xl font-serif text-rose-400">-{formatCurrency(result.monthlyMortgage)}</p>
+              </GlassCard>
 
-               <GlassCard className={`p-5 flex flex-col justify-between h-32 border-t-2 ${result.netMonthlyCashFlow >= 0 ? 'border-t-emerald-500' : 'border-t-rose-500'}`}>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                      {t.kpi_net_flow} <DollarSignIcon size={12}/>
-                    </p>
-                  </div>
-                  <div>
-                    <p className={`text-3xl font-serif ${result.netMonthlyCashFlow >= 0 ? 'text-[#D4AF37]' : 'text-rose-400'}`}>
-                      {result.netMonthlyCashFlow > 0 ? '+' : ''}{formatCurrency(result.netMonthlyCashFlow)}
-                    </p>
-                     {result.netMonthlyCashFlow >= 0 && (
-                       <span className="text-[10px] text-emerald-500 bg-emerald-500/10 px-2 py-0.5 mt-1 inline-block">{t.label_positive_carry}</span>
-                     )}
-                  </div>
-               </GlassCard>
+              <GlassCard className={`p-5 flex flex-col justify-between h-32 border-t-2 ${result.netMonthlyCashFlow >= 0 ? 'border-t-emerald-500' : 'border-t-rose-500'}`}>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                    {t.kpi_net_flow} <DollarSignIcon size={12} />
+                  </p>
+                </div>
+                <div>
+                  <p className={`text-3xl font-serif ${result.netMonthlyCashFlow >= 0 ? 'text-[#D4AF37]' : 'text-rose-400'}`}>
+                    {result.netMonthlyCashFlow > 0 ? '+' : ''}{formatCurrency(result.netMonthlyCashFlow)}
+                  </p>
+                  {result.netMonthlyCashFlow >= 0 && (
+                    <span className="text-[10px] text-emerald-500 bg-emerald-500/10 px-2 py-0.5 mt-1 inline-block">{t.label_positive_carry}</span>
+                  )}
+                </div>
+              </GlassCard>
             </div>
 
             {/* Main Chart */}
@@ -786,83 +787,83 @@ const App: React.FC = () => {
                   <ComposedChart data={result.yearlyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={COLORS.INCOME} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={COLORS.INCOME} stopOpacity={0}/>
+                        <stop offset="5%" stopColor={COLORS.INCOME} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={COLORS.INCOME} stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorHedge" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={COLORS.HEDGE} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={COLORS.HEDGE} stopOpacity={0}/>
+                        <stop offset="5%" stopColor={COLORS.HEDGE} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={COLORS.HEDGE} stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorReserve" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={COLORS.RESERVE} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={COLORS.RESERVE} stopOpacity={0}/>
+                        <stop offset="5%" stopColor={COLORS.RESERVE} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={COLORS.RESERVE} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.3}/>
-                    <XAxis 
-                      dataKey="year" 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tick={{fill: '#64748b', fontSize: 10, fontFamily: 'sans-serif'}}
-                      label={{ value: t.axis_year, position: 'insideBottom', offset: -10, fill: '#475569', fontSize: 10 }} 
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.3} />
+                    <XAxis
+                      dataKey="year"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'sans-serif' }}
+                      label={{ value: t.axis_year, position: 'insideBottom', offset: -10, fill: '#475569', fontSize: 10 }}
                     />
-                    <YAxis 
+                    <YAxis
                       tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
                       tickLine={false}
                       axisLine={false}
-                      tick={{fill: '#64748b', fontSize: 10, fontFamily: 'sans-serif'}}
+                      tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'sans-serif' }}
                     />
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', fontSize: '12px' }}
                       itemStyle={{ padding: 0 }}
                       formatter={(value: number, name: string) => [
-                        formatCurrency(value), 
-                        name === 'netEquity' ? t.tooltip_net_equity : 
-                        name === 'mortgageBalance' ? t.tooltip_mortgage : 
-                        name === 'incomeAV' ? t.tooltip_income : 
-                        name === 'hedgeAV' ? t.tooltip_hedge : 
-                        name === 'reserveCash' ? t.tooltip_reserve : name
+                        formatCurrency(value),
+                        name === 'netEquity' ? t.tooltip_net_equity :
+                          name === 'mortgageBalance' ? t.tooltip_mortgage :
+                            name === 'incomeAV' ? t.tooltip_income :
+                              name === 'hedgeAV' ? t.tooltip_hedge :
+                                name === 'reserveCash' ? t.tooltip_reserve : name
                       ]}
                       labelFormatter={(label) => lang === 'zh' ? `第 ${label} 年` : `Year ${label}`}
                     />
-                    
-                    <Area 
-                      type="monotone" 
-                      dataKey="reserveCash" 
-                      stackId="1" 
+
+                    <Area
+                      type="monotone"
+                      dataKey="reserveCash"
+                      stackId="1"
                       stroke={COLORS.RESERVE}
-                      fill="url(#colorReserve)" 
+                      fill="url(#colorReserve)"
                       name="reserveCash"
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="incomeAV" 
-                      stackId="1" 
+                    <Area
+                      type="monotone"
+                      dataKey="incomeAV"
+                      stackId="1"
                       stroke={COLORS.INCOME}
-                      fill="url(#colorIncome)" 
+                      fill="url(#colorIncome)"
                       name="incomeAV"
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="hedgeAV" 
-                      stackId="1" 
+                    <Area
+                      type="monotone"
+                      dataKey="hedgeAV"
+                      stackId="1"
                       stroke={COLORS.HEDGE}
-                      fill="url(#colorHedge)" 
+                      fill="url(#colorHedge)"
                       name="hedgeAV"
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="mortgageBalance" 
-                      stroke={COLORS.MORTGAGE} 
+                    <Line
+                      type="monotone"
+                      dataKey="mortgageBalance"
+                      stroke={COLORS.MORTGAGE}
                       strokeWidth={1}
                       strokeDasharray="4 4"
                       name="mortgageBalance"
                       dot={false}
                       opacity={0.7}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="netEquity" 
+                    <Line
+                      type="monotone"
+                      dataKey="netEquity"
                       stroke={COLORS.GOLD}
                       strokeWidth={2}
                       name="netEquity"
@@ -876,36 +877,36 @@ const App: React.FC = () => {
 
             {/* Feature Highlights */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <GlassCard className="p-6 border-l-2 border-l-[#D4AF37]">
-                   <div className="flex gap-4">
-                     <div className="mt-1"><ShieldCheck className="text-[#D4AF37]" size={20}/></div>
-                     <div>
-                       <h4 className="font-serif text-slate-200 text-lg">{t.feature_estate_title}</h4>
-                       <p className="text-xs text-slate-400 mt-2 leading-relaxed font-light">
-                         {t.feature_estate_desc}
-                       </p>
-                     </div>
-                   </div>
-                </GlassCard>
+              <GlassCard className="p-6 border-l-2 border-l-[#D4AF37]">
+                <div className="flex gap-4">
+                  <div className="mt-1"><ShieldCheck className="text-[#D4AF37]" size={20} /></div>
+                  <div>
+                    <h4 className="font-serif text-slate-200 text-lg">{t.feature_estate_title}</h4>
+                    <p className="text-xs text-slate-400 mt-2 leading-relaxed font-light">
+                      {t.feature_estate_desc}
+                    </p>
+                  </div>
+                </div>
+              </GlassCard>
 
-                <GlassCard className="p-6 border-l-2 border-l-indigo-500">
-                   <div className="flex gap-4">
-                     <div className="mt-1"><Briefcase className="text-indigo-400" size={20}/></div>
-                     <div>
-                       <h4 className="font-serif text-slate-200 text-lg">{t.feature_liquidity_title}</h4>
-                       <div className="mt-3 space-y-2">
-                          <div className="flex justify-between text-xs border-b border-white/5 pb-1">
-                            <span className="text-slate-500 uppercase tracking-wider">{t.label_surrender_5}</span>
-                            <span className="text-slate-200">{formatCurrency(result.yearlyData[4].surrenderValue)}</span>
-                          </div>
-                          <div className="flex justify-between text-xs">
-                            <span className="text-slate-500 uppercase tracking-wider">{t.label_net_equity_30}</span>
-                            <span className="text-[#D4AF37] text-sm font-serif">{formatCurrency(result.yearlyData[29].netEquity)}</span>
-                          </div>
-                       </div>
-                     </div>
-                   </div>
-                </GlassCard>
+              <GlassCard className="p-6 border-l-2 border-l-indigo-500">
+                <div className="flex gap-4">
+                  <div className="mt-1"><Briefcase className="text-indigo-400" size={20} /></div>
+                  <div>
+                    <h4 className="font-serif text-slate-200 text-lg">{t.feature_liquidity_title}</h4>
+                    <div className="mt-3 space-y-2">
+                      <div className="flex justify-between text-xs border-b border-white/5 pb-1">
+                        <span className="text-slate-500 uppercase tracking-wider">{t.label_surrender_5}</span>
+                        <span className="text-slate-200">{formatCurrency(result.yearlyData[4].surrenderValue)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500 uppercase tracking-wider">{t.label_net_equity_30}</span>
+                        <span className="text-[#D4AF37] text-sm font-serif">{formatCurrency(result.yearlyData[29].netEquity)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
             </div>
 
             <div className="text-[10px] text-slate-600 font-light text-justify p-4 border border-white/5">
@@ -922,189 +923,217 @@ const App: React.FC = () => {
           Fixed position, full width A4 logic.
       */}
       {isReportVisible && (
-        <div 
-          id="pdf-report-container" 
+        <div
+          id="pdf-report-container"
           className="fixed top-0 left-[-10000px] w-[210mm] min-h-[297mm] bg-white text-slate-800 p-[15mm] shadow-none z-0"
         >
-            
-            {/* Report Header */}
-            <div className="flex justify-between items-center border-b-2 border-slate-200 pb-4 mb-8">
-               <div>
-                  <h1 className="text-3xl font-serif text-slate-900 font-bold mb-1">{t.report_title}</h1>
-                  <p className="text-sm text-slate-500 tracking-wide">{t.subtitle}</p>
-               </div>
-               <div className="text-right">
-                  <div className="text-4xl text-[#D4AF37] mb-1">
-                    <Landmark />
-                  </div>
-                  <p className="text-xs text-slate-400">{t.generated_on} {new Date().toLocaleDateString()}</p>
-               </div>
-            </div>
 
-            {/* Summary Boxes */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="bg-slate-50 p-4 border border-slate-100">
-                <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_loan}</p>
-                <p className="text-xl font-medium text-slate-800">{formatCurrency(result.loanAmount)}</p>
+          {/* Report Header */}
+          <div className="flex justify-between items-center border-b-2 border-slate-200 pb-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-serif text-slate-900 font-bold mb-1">{t.report_title}</h1>
+              <p className="text-sm text-slate-500 tracking-wide">{t.subtitle}</p>
+            </div>
+            <div className="text-right">
+              <div className="text-4xl text-[#D4AF37] mb-1">
+                <Landmark />
               </div>
-               <div className="bg-slate-50 p-4 border border-slate-100">
-                <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_invested}</p>
-                <p className="text-xl font-medium text-[#D4AF37]">{formatCurrency(result.investedAmount)}</p>
+              <p className="text-xs text-slate-400">{t.generated_on} {new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          {/* Summary Boxes */}
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="bg-slate-50 p-4 border border-slate-100">
+              <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_loan}</p>
+              <p className="text-xl font-medium text-slate-800">{formatCurrency(result.loanAmount)}</p>
+            </div>
+            <div className="bg-slate-50 p-4 border border-slate-100">
+              <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_invested}</p>
+              <p className="text-xl font-medium text-[#D4AF37]">{formatCurrency(result.investedAmount)}</p>
+            </div>
+            <div className="bg-slate-50 p-4 border border-slate-100">
+              <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_reserve_cash}</p>
+              <p className="text-xl font-medium text-slate-800">{formatCurrency(result.reserveCash)}</p>
+            </div>
+          </div>
+
+          {/* New: Mortgage Details Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-slate-800 border-l-4 border-rose-500 pl-3 mb-4">{t.report_section_mortgage}</h3>
+            <div className="grid grid-cols-3 gap-6 text-sm">
+              <div className="flex flex-col">
+                <span className="text-slate-500 mb-1">{t.label_rate}</span>
+                <span className="font-bold text-slate-800">{safeNumber(mortgageRate)}%</span>
               </div>
-               <div className="bg-slate-50 p-4 border border-slate-100">
-                <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_reserve_cash}</p>
-                <p className="text-xl font-medium text-slate-800">{formatCurrency(result.reserveCash)}</p>
+              <div className="flex flex-col">
+                <span className="text-slate-500 mb-1">{t.label_tenure}</span>
+                <span className="font-bold text-slate-800">{safeNumber(mortgageTenure)}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-slate-500 mb-1">{t.kpi_mortgage}</span>
+                <span className="font-bold text-rose-600">-{formatCurrency(result.monthlyMortgage)}</span>
               </div>
             </div>
+          </div>
 
-            {/* New: Mortgage Details Section */}
-            <div className="mb-8">
-               <h3 className="text-lg font-bold text-slate-800 border-l-4 border-rose-500 pl-3 mb-4">{t.report_section_mortgage}</h3>
-               <div className="grid grid-cols-3 gap-6 text-sm">
-                  <div className="flex flex-col">
-                     <span className="text-slate-500 mb-1">{t.label_rate}</span>
-                     <span className="font-bold text-slate-800">{safeNumber(mortgageRate)}%</span>
-                  </div>
-                   <div className="flex flex-col">
-                     <span className="text-slate-500 mb-1">{t.label_tenure}</span>
-                     <span className="font-bold text-slate-800">{safeNumber(mortgageTenure)}</span>
-                  </div>
-                   <div className="flex flex-col">
-                     <span className="text-slate-500 mb-1">{t.kpi_mortgage}</span>
-                     <span className="font-bold text-rose-600">-{formatCurrency(result.monthlyMortgage)}</span>
-                  </div>
-               </div>
-            </div>
-
-            {/* 1. Allocation Pie Charts */}
-            <div className="mb-8">
-              <h3 className="text-lg font-bold text-slate-800 border-l-4 border-[#D4AF37] pl-3 mb-4">{t.report_section_allocation}</h3>
-              <div className="grid grid-cols-2 gap-8">
-                 {/* Income Pie */}
-                 <div className="bg-slate-50 p-4 rounded border border-slate-100">
-                    <p className="text-center font-bold text-emerald-700 mb-2">{t.label_income_alloc} ({allocationIncome}%)</p>
-                    <div className="h-40 relative">
-                       <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                             <Pie
-                                data={incomePieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={40}
-                                outerRadius={70}
-                                paddingAngle={2}
-                                dataKey="value"
-                                isAnimationActive={false} // Crucial for PDF
-                             >
-                                {incomePieData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={PIE_COLORS_INCOME[index % PIE_COLORS_INCOME.length]} />
-                                ))}
-                             </Pie>
-                          </PieChart>
-                       </ResponsiveContainer>
+          {/* 1. Allocation Pie Charts */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-slate-800 border-l-4 border-[#D4AF37] pl-3 mb-4">{t.report_section_allocation}</h3>
+            <div className="grid grid-cols-2 gap-8">
+              {/* Income Pie */}
+              <div className="bg-slate-50 p-4 rounded border border-slate-100">
+                <p className="text-center font-bold text-emerald-700 mb-2">{t.label_income_alloc} ({allocationIncome}%)</p>
+                <div className="h-40 relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={incomePieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={70}
+                        paddingAngle={2}
+                        dataKey="value"
+                        isAnimationActive={false} // Crucial for PDF
+                      >
+                        {incomePieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS_INCOME[index % PIE_COLORS_INCOME.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* Fixed: Use Grid for legend to avoid cutting off text if many funds */}
+                <div className="mt-2 text-xs text-slate-600 grid grid-cols-1 gap-1">
+                  {incomePieData.map((entry, index) => (
+                    <div key={index} className="flex justify-between items-start border-b border-slate-100 pb-1 last:border-0">
+                      <span className="text-left leading-tight pr-2">{entry.name}</span>
+                      <span className="text-right font-mono whitespace-nowrap">{entry.value}%</span>
                     </div>
-                    {/* Fixed: Use Grid for legend to avoid cutting off text if many funds */}
-                    <div className="mt-2 text-xs text-slate-600 grid grid-cols-1 gap-1">
-                      {incomePieData.map((entry, index) => (
-                        <div key={index} className="flex justify-between items-start border-b border-slate-100 pb-1 last:border-0">
-                          <span className="text-left leading-tight pr-2">{entry.name}</span>
-                          <span className="text-right font-mono whitespace-nowrap">{entry.value}%</span>
-                        </div>
-                      ))}
-                    </div>
-                 </div>
+                  ))}
+                </div>
+              </div>
 
-                 {/* Hedge Pie */}
-                 <div className="bg-slate-50 p-4 rounded border border-slate-100">
-                    <p className="text-center font-bold text-indigo-700 mb-2">{t.label_hedge_alloc} ({allocationHedge}%)</p>
-                     <div className="h-40 relative">
-                       <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                             <Pie
-                                data={hedgePieData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={40}
-                                outerRadius={70}
-                                paddingAngle={2}
-                                dataKey="value"
-                                isAnimationActive={false} // Crucial for PDF
-                             >
-                                {hedgePieData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={PIE_COLORS_HEDGE[index % PIE_COLORS_HEDGE.length]} />
-                                ))}
-                             </Pie>
-                          </PieChart>
-                       </ResponsiveContainer>
+              {/* Hedge Pie */}
+              <div className="bg-slate-50 p-4 rounded border border-slate-100">
+                <p className="text-center font-bold text-indigo-700 mb-2">{t.label_hedge_alloc} ({allocationHedge}%)</p>
+                <div className="h-40 relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={hedgePieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={70}
+                        paddingAngle={2}
+                        dataKey="value"
+                        isAnimationActive={false} // Crucial for PDF
+                      >
+                        {hedgePieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS_HEDGE[index % PIE_COLORS_HEDGE.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* Fixed: Use Grid for legend to avoid cutting off text if many funds */}
+                <div className="mt-2 text-xs text-slate-600 grid grid-cols-1 gap-1">
+                  {hedgePieData.map((entry, index) => (
+                    <div key={index} className="flex justify-between items-start border-b border-slate-100 pb-1 last:border-0">
+                      <span className="text-left leading-tight pr-2">{entry.name}</span>
+                      <span className="text-right font-mono whitespace-nowrap">{entry.value}%</span>
                     </div>
-                     {/* Fixed: Use Grid for legend to avoid cutting off text if many funds */}
-                     <div className="mt-2 text-xs text-slate-600 grid grid-cols-1 gap-1">
-                      {hedgePieData.map((entry, index) => (
-                        <div key={index} className="flex justify-between items-start border-b border-slate-100 pb-1 last:border-0">
-                          <span className="text-left leading-tight pr-2">{entry.name}</span>
-                          <span className="text-right font-mono whitespace-nowrap">{entry.value}%</span>
-                        </div>
-                      ))}
-                    </div>
-                 </div>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* 2. Monthly Cash Flow */}
-            <div className="mb-8">
-              <h3 className="text-lg font-bold text-slate-800 border-l-4 border-emerald-500 pl-3 mb-4">{t.report_section_cashflow}</h3>
-              <div className="grid grid-cols-3 divide-x divide-slate-200 border border-slate-200 rounded-lg overflow-hidden">
-                 <div className="p-4 bg-emerald-50 text-center">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_income}</p>
-                    <p className="text-2xl font-bold text-emerald-700">{formatCurrency(result.monthlyDividend, true)}</p>
-                 </div>
-                 <div className="p-4 bg-rose-50 text-center">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_mortgage}</p>
-                    <p className="text-2xl font-bold text-rose-700">-{formatCurrency(result.monthlyMortgage, true)}</p>
-                 </div>
-                 <div className={`p-4 text-center ${result.netMonthlyCashFlow >= 0 ? 'bg-indigo-50' : 'bg-orange-50'}`}>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_net_flow}</p>
-                    <p className={`text-2xl font-bold ${result.netMonthlyCashFlow >= 0 ? 'text-indigo-700' : 'text-orange-700'}`}>
-                       {result.netMonthlyCashFlow > 0 ? '+' : ''}{formatCurrency(result.netMonthlyCashFlow, true)}
-                    </p>
-                 </div>
+          {/* 2. Monthly Cash Flow */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-slate-800 border-l-4 border-emerald-500 pl-3 mb-4">{t.report_section_cashflow}</h3>
+            <div className="grid grid-cols-3 divide-x divide-slate-200 border border-slate-200 rounded-lg overflow-hidden">
+              <div className="p-4 bg-emerald-50 text-center">
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_income}</p>
+                <p className="text-2xl font-bold text-emerald-700">{formatCurrency(result.monthlyDividend, true)}</p>
               </div>
-            </div>
-
-             {/* 3. Projection Table */}
-             <div className="mb-8">
-               <h3 className="text-lg font-bold text-slate-800 border-l-4 border-slate-500 pl-3 mb-4">{t.report_section_projection}</h3>
-               <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-100 text-slate-600 font-bold">
-                     <tr>
-                        <th className="px-4 py-3">{t.table_year}</th>
-                        <th className="px-4 py-3 text-right">{t.table_net_equity}</th>
-                        <th className="px-4 py-3 text-right">{t.table_roi}</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                     {projectionRows.map(year => {
-                        const data = result.yearlyData[year - 1]; // 0-indexed
-                        const roi = ((data.netEquity - result.investedAmount) / result.investedAmount) * 100;
-                        return (
-                           <tr key={year} className="hover:bg-slate-50">
-                              <td className="px-4 py-3 font-medium text-slate-800">{lang === 'zh' ? `第 ${year} 年` : `Year ${year}`}</td>
-                              <td className="px-4 py-3 text-right text-slate-700 font-mono">{formatCurrency(data.netEquity)}</td>
-                              <td className={`px-4 py-3 text-right font-mono font-bold ${roi >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                 {roi > 0 ? '+' : ''}{roi.toFixed(1)}%
-                              </td>
-                           </tr>
-                        );
-                     })}
-                  </tbody>
-               </table>
-             </div>
-
-             <div className="absolute bottom-10 left-0 w-full text-center">
-                <p className="text-[10px] text-slate-400 max-w-2xl mx-auto border-t border-slate-100 pt-2 px-8">
-                   {t.disclaimer}
+              <div className="p-4 bg-rose-50 text-center">
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_mortgage}</p>
+                <p className="text-2xl font-bold text-rose-700">-{formatCurrency(result.monthlyMortgage, true)}</p>
+              </div>
+              <div className={`p-4 text-center ${result.netMonthlyCashFlow >= 0 ? 'bg-indigo-50' : 'bg-orange-50'}`}>
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_net_flow}</p>
+                <p className={`text-2xl font-bold ${result.netMonthlyCashFlow >= 0 ? 'text-indigo-700' : 'text-orange-700'}`}>
+                  {result.netMonthlyCashFlow > 0 ? '+' : ''}{formatCurrency(result.netMonthlyCashFlow, true)}
                 </p>
-             </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Projection Table (Full 30 Years) */}
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-slate-800 border-l-4 border-slate-500 pl-3 mb-4">{t.report_section_projection}</h3>
+
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column: Years 1-15 */}
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-100 text-slate-600 font-bold">
+                  <tr>
+                    <th className="px-2 py-2">{t.table_year}</th>
+                    <th className="px-2 py-2 text-right">{t.table_net_equity}</th>
+                    <th className="px-2 py-2 text-right">{t.table_roi}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {result.yearlyData.slice(0, 15).map(data => {
+                    const roi = ((data.netEquity - result.investedAmount) / result.investedAmount) * 100;
+                    return (
+                      <tr key={data.year} className="hover:bg-slate-50">
+                        <td className="px-2 py-1.5 font-medium text-slate-800">{data.year}</td>
+                        <td className="px-2 py-1.5 text-right text-slate-700 font-mono">{formatCurrency(data.netEquity, true)}</td>
+                        <td className={`px-2 py-1.5 text-right font-mono font-bold ${roi >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {roi > 0 ? '+' : ''}{roi.toFixed(1)}%
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Right Column: Years 16-30 */}
+              <table className="w-full text-xs text-left">
+                <thead className="bg-slate-100 text-slate-600 font-bold">
+                  <tr>
+                    <th className="px-2 py-2">{t.table_year}</th>
+                    <th className="px-2 py-2 text-right">{t.table_net_equity}</th>
+                    <th className="px-2 py-2 text-right">{t.table_roi}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {result.yearlyData.slice(15, 30).map(data => {
+                    const roi = ((data.netEquity - result.investedAmount) / result.investedAmount) * 100;
+                    return (
+                      <tr key={data.year} className="hover:bg-slate-50">
+                        <td className="px-2 py-1.5 font-medium text-slate-800">{data.year}</td>
+                        <td className="px-2 py-1.5 text-right text-slate-700 font-mono">{formatCurrency(data.netEquity, true)}</td>
+                        <td className={`px-2 py-1.5 text-right font-mono font-bold ${roi >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {roi > 0 ? '+' : ''}{roi.toFixed(1)}%
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="absolute bottom-10 left-0 w-full text-center">
+            <p className="text-[10px] text-slate-400 max-w-2xl mx-auto border-t border-slate-100 pt-2 px-8">
+              {t.disclaimer}
+            </p>
+          </div>
 
         </div>
       )}
@@ -1114,7 +1143,7 @@ const App: React.FC = () => {
 };
 
 // Helper Icon
-const DollarSignIcon = ({size}:{size:number}) => (
+const DollarSignIcon = ({ size }: { size: number }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
 );
 
@@ -1130,10 +1159,10 @@ const PieChart = ({ width, height, children }: { width?: number; height?: number
   // This ensures a valid positive dimension is always passed to ComposedChart, even if measurement fails momentarily.
   const safeWidth = width && width > 0 ? width : 150;
   const safeHeight = height && height > 0 ? height : 150;
-  
+
   return (
     <ComposedChart width={safeWidth} height={safeHeight} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-        {children}
+      {children}
     </ComposedChart>
   );
 };
