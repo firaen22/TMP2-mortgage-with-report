@@ -1,20 +1,61 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Property Value Calculator (Renovation Report)
 
-# Run and deploy your AI Studio app
+A React application for calculating property value appreciation with a renovation report feature. Built with Vite, React, and TypeScript.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1CZDXenGwAP7PaCCdjJow2UR6Vj3790Av
+- **Property Value Calculation**: Estimate future property value based on various parameters.
+- **Renovation Report**: Generate and view detailed renovation reports.
+- **PDF Export**: Export reports as PDF (using `html2canvas` and `jspdf`).
+- **AI Integration**: Uses Google GenAI for intelligent insights (requires API key).
 
-## Run Locally
+## Getting Started
 
-**Prerequisites:**  Node.js
+### Prerequisites
 
+- Node.js (v20 recommended)
+- npm
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Installation
+
+1. Clone the repository.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Development
+
+Start the development server:
+```bash
+npm run dev
+```
+
+### Build
+
+Build the project for production:
+```bash
+npm run build
+```
+
+Preview the production build:
+```bash
+npm run preview
+```
+
+## Deployment
+
+This project is configured for automated deployment to GitHub Pages using GitHub Actions.
+
+1. Push changes to the `main` branch.
+2. The `.github/workflows/deploy.yml` workflow will automatically run, build, and deploy the application to GitHub Pages.
+3. Ensure "GitHub Pages" source is set to "GitHub Actions" in your repository settings > Pages.
+
+## Configuration
+
+- **Environment Variables**:
+  - `VITE_GEMINI_API_KEY`: API key for Google Gemini AI. Create a `.env` file in the root directory to set this locally.
+
+## License
+
+[License Name]
