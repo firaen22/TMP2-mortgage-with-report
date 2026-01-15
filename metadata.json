@@ -1,0 +1,5 @@
+{
+  "name": "物業增值計算機 (with report ) ver2",
+  "description": "物業加按套利計算器，包含基金派息、手續費對沖模擬及長期資產價值預測。",
+  "requestFramePermissions": []
+}
