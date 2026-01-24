@@ -6,6 +6,8 @@ export const FUNDS: Fund[] = [
   { id: 'fidelity', name: '富達美元高收益基金', yield: 7.36, riskLevel: 'Medium' },
   { id: 'aia', name: '友邦美國高收益債券基金', yield: 7.07, riskLevel: 'Medium' },
   { id: 'capital_group', name: '資本集團全球公司債券基金', yield: 4.80, riskLevel: 'Low' },
+  { id: 'janus_henderson', name: '駿利亨德森平衡基金', yield: 7.00, riskLevel: 'Medium' },
+  { id: 'principal_global', name: '信安環球投資基金 - 優先證券基金', yield: 8.00, riskLevel: 'Low' },
 ];
 
 export const DEFAULTS = {
