@@ -29,6 +29,7 @@ const App: React.FC = () => {
   const [mortgageLTV, setMortgageLTV] = useState<number | string>(DEFAULTS.MORTGAGE_LTV);
   const [mortgageRate, setMortgageRate] = useState<number | string>(DEFAULTS.MORTGAGE_RATE);
   const [mortgageTenure, setMortgageTenure] = useState<number | string>(DEFAULTS.MORTGAGE_TENURE);
+  const [ownCash, setOwnCash] = useState<number | string>(0);
   const [reserveCashPercent, setReserveCashPercent] = useState<number>(0);
 
   // --- Portfolio Logic ---
@@ -52,6 +53,7 @@ const App: React.FC = () => {
     mortgageLTV,
     mortgageRate,
     mortgageTenure,
+    ownCash,
     reserveCashPercent,
     allocationIncome,
     incomeYield: incomeStats.yield,
@@ -103,6 +105,8 @@ const App: React.FC = () => {
               setMortgageRate={setMortgageRate}
               mortgageTenure={mortgageTenure}
               setMortgageTenure={setMortgageTenure}
+              ownCash={ownCash}
+              setOwnCash={setOwnCash}
               reserveCashPercent={reserveCashPercent}
               setReserveCashPercent={setReserveCashPercent}
               reserveCashAmount={result.reserveCash}
@@ -111,6 +115,7 @@ const App: React.FC = () => {
             <SummaryCard
               t={t}
               loanAmount={result.loanAmount}
+              ownCash={result.ownCash}
               investedAmount={result.investedAmount}
               reserveCash={result.reserveCash}
             />

@@ -8,6 +8,7 @@ interface SimulationInputs {
     mortgageLTV: string | number;
     mortgageRate: string | number;
     mortgageTenure: string | number;
+    ownCash: string | number;
     reserveCashPercent: number;
     allocationIncome: number;
     incomeYield: number;
@@ -19,6 +20,7 @@ export const useSimulation = ({
     mortgageLTV,
     mortgageRate,
     mortgageTenure,
+    ownCash,
     reserveCashPercent,
     allocationIncome,
     incomeYield,
@@ -32,6 +34,7 @@ export const useSimulation = ({
         const valLTV = safeNumber(mortgageLTV);
         const valRate = safeNumber(mortgageRate);
         const valTenure = safeNumber(mortgageTenure);
+        const valOwnCash = safeNumber(ownCash);
 
         // 1. Mortgage Basics
         const loanAmount = valProperty * (valLTV / 100);
@@ -47,8 +50,9 @@ export const useSimulation = ({
         }
 
         // 2. Investment Split
-        const reserveCash = loanAmount * (reserveCashPercent / 100);
-        const investedAmount = loanAmount - reserveCash;
+        const totalCapital = loanAmount + valOwnCash;
+        const reserveCash = totalCapital * (reserveCashPercent / 100);
+        const investedAmount = totalCapital - reserveCash;
 
         const initialIncomeAV = investedAmount * (allocationIncome / 100);
         const initialHedgeAV = investedAmount * (allocationHedge / 100);
@@ -117,6 +121,7 @@ export const useSimulation = ({
 
         return {
             loanAmount,
+            ownCash: valOwnCash,
             investedAmount,
             reserveCash,
             monthlyMortgage,
@@ -124,5 +129,5 @@ export const useSimulation = ({
             netMonthlyCashFlow,
             yearlyData
         };
-    }, [propertyValue, mortgageLTV, mortgageRate, mortgageTenure, reserveCashPercent, allocationIncome, incomeYield, hedgeYield, allocationHedge]);
+    }, [propertyValue, mortgageLTV, mortgageRate, mortgageTenure, ownCash, reserveCashPercent, allocationIncome, incomeYield, hedgeYield, allocationHedge]);
 };

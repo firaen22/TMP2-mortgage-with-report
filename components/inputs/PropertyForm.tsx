@@ -13,6 +13,8 @@ interface PropertyFormProps {
     setMortgageRate: (val: number | string) => void;
     mortgageTenure: number | string;
     setMortgageTenure: (val: number | string) => void;
+    ownCash: number | string;
+    setOwnCash: (val: number | string) => void;
     reserveCashPercent: number;
     setReserveCashPercent: (val: number) => void;
     reserveCashAmount: number; // For display
@@ -28,6 +30,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     setMortgageRate,
     mortgageTenure,
     setMortgageTenure,
+    ownCash,
+    setOwnCash,
     reserveCashPercent,
     setReserveCashPercent,
     reserveCashAmount
@@ -48,6 +52,19 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                             type="number"
                             value={propertyValue}
                             onChange={(e) => setPropertyValue(e.target.value)}
+                            className="w-full pl-12 bg-transparent border-b border-slate-700 py-2 text-xl font-serif text-slate-100 focus:outline-none focus:border-[#D4AF37] transition-all"
+                        />
+                    </div>
+                </div>
+
+                <div className="group">
+                    <label className="block text-xs uppercase tracking-wider text-slate-500 mb-2 group-focus-within:text-[#D4AF37] transition-colors">{t.label_own_cash}</label>
+                    <div className="relative">
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-500 text-lg font-serif">{t.currency}</span>
+                        <input
+                            type="number"
+                            value={ownCash}
+                            onChange={(e) => setOwnCash(e.target.value)}
                             className="w-full pl-12 bg-transparent border-b border-slate-700 py-2 text-xl font-serif text-slate-100 focus:outline-none focus:border-[#D4AF37] transition-all"
                         />
                     </div>

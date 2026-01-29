@@ -19,6 +19,7 @@ export interface SimulationYear {
 
 export interface CalculationResult {
   loanAmount: number;
+  ownCash: number;
   investedAmount: number;
   reserveCash: number;
   monthlyMortgage: number;

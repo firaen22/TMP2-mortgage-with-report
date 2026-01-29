@@ -71,10 +71,14 @@ const PDFReport: React.FC<PDFReportProps> = ({
                 </div>
 
                 {/* Summary Boxes */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-4 gap-4 mb-8">
                     <div className="bg-slate-50 p-4 border border-slate-100">
                         <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_loan}</p>
                         <p className="text-xl font-medium text-slate-800">{formatCurrency(result.loanAmount)}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 border border-slate-100">
+                        <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_own_cash}</p>
+                        <p className="text-xl font-medium text-slate-800">{formatCurrency(result.ownCash)}</p>
                     </div>
                     <div className="bg-slate-50 p-4 border border-slate-100">
                         <p className="text-xs text-slate-500 uppercase tracking-wider">{t.label_invested}</p>
