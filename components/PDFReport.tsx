@@ -192,16 +192,16 @@ const PDFReport: React.FC<PDFReportProps> = ({
                     <div className="grid grid-cols-3 divide-x divide-slate-200 border border-slate-200 rounded-lg overflow-hidden">
                         <div className="p-4 bg-emerald-50 text-center">
                             <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_income}</p>
-                            <p className="text-2xl font-bold text-emerald-700">{formatCurrency(result.monthlyDividend, 'zh', true)}</p>
+                            <p className="text-2xl font-bold text-emerald-700">{formatCurrency(result.monthlyDividend, 'zh', false)}</p>
                         </div>
                         <div className="p-4 bg-rose-50 text-center">
                             <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_mortgage}</p>
-                            <p className="text-2xl font-bold text-rose-700">-{formatCurrency(result.monthlyMortgage, 'zh', true)}</p>
+                            <p className="text-2xl font-bold text-rose-700">-{formatCurrency(result.monthlyMortgage, 'zh', false)}</p>
                         </div>
                         <div className={`p-4 text-center ${result.netMonthlyCashFlow >= 0 ? 'bg-indigo-50' : 'bg-orange-50'}`}>
                             <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t.kpi_net_flow}</p>
                             <p className={`text-2xl font-bold ${result.netMonthlyCashFlow >= 0 ? 'text-indigo-700' : 'text-orange-700'}`}>
-                                {result.netMonthlyCashFlow > 0 ? '+' : ''}{formatCurrency(result.netMonthlyCashFlow, 'zh', true)}
+                                {result.netMonthlyCashFlow > 0 ? '+' : ''}{formatCurrency(result.netMonthlyCashFlow, 'zh', false)}
                             </p>
                         </div>
                     </div>
@@ -248,11 +248,11 @@ const PDFReport: React.FC<PDFReportProps> = ({
                                     return (
                                         <tr key={data.year} className="hover:bg-slate-50">
                                             <td className="px-1 py-1.5 font-medium text-slate-800">{data.year}</td>
-                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, 'zh', true)}</td>
-                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, 'zh', true)}</td>
-                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, 'zh', true)}</td>
+                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, 'zh', false)}</td>
+                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, 'zh', false)}</td>
+                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, 'zh', false)}</td>
                                             <td className="px-1 py-1.5 text-right font-mono font-bold text-slate-900 text-[9px]">
-                                                {formatCurrency(data.netEquity, 'zh', true)}
+                                                {formatCurrency(data.netEquity, 'zh', false)}
                                             </td>
                                         </tr>
                                     );
@@ -276,11 +276,11 @@ const PDFReport: React.FC<PDFReportProps> = ({
                                     return (
                                         <tr key={data.year} className="hover:bg-slate-50">
                                             <td className="px-1 py-1.5 font-medium text-slate-800">{data.year}</td>
-                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, 'zh', true)}</td>
-                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, 'zh', true)}</td>
-                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, 'zh', true)}</td>
+                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, 'zh', false)}</td>
+                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, 'zh', false)}</td>
+                                            <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, 'zh', false)}</td>
                                             <td className="px-1 py-1.5 text-right font-mono font-bold text-slate-900 text-[9px]">
-                                                {formatCurrency(data.netEquity, 'zh', true)}
+                                                {formatCurrency(data.netEquity, 'zh', false)}
                                             </td>
                                         </tr>
                                     );
