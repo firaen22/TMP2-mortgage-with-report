@@ -249,7 +249,7 @@ const PDFReport: React.FC<PDFReportProps> = ({
                                         <tr key={data.year} className="hover:bg-slate-50">
                                             <td className="px-1 py-1.5 font-medium text-slate-800">{data.year}</td>
                                             <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, 'zh', false)}</td>
-                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, 'zh', false)}</td>
+                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">{formatCurrency(data.mortgageBalance, 'zh', false)}</td>
                                             <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, 'zh', false)}</td>
                                             <td className="px-1 py-1.5 text-right font-mono font-bold text-slate-900 text-[9px]">
                                                 {formatCurrency(data.netEquity, 'zh', false)}
@@ -277,7 +277,7 @@ const PDFReport: React.FC<PDFReportProps> = ({
                                         <tr key={data.year} className="hover:bg-slate-50">
                                             <td className="px-1 py-1.5 font-medium text-slate-800">{data.year}</td>
                                             <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.totalAV, 'zh', false)}</td>
-                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">-{formatCurrency(data.mortgageBalance, 'zh', false)}</td>
+                                            <td className="px-1 py-1.5 text-right text-rose-600 font-mono text-[9px]">{formatCurrency(data.mortgageBalance, 'zh', false)}</td>
                                             <td className="px-1 py-1.5 text-right text-slate-700 font-mono text-[9px]">{formatCurrency(data.reserveCash, 'zh', false)}</td>
                                             <td className="px-1 py-1.5 text-right font-mono font-bold text-slate-900 text-[9px]">
                                                 {formatCurrency(data.netEquity, 'zh', false)}
