@@ -17,7 +17,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ t, loanAmount, outstandingLoa
             <h3 className="text-xs font-serif text-[#D4AF37] uppercase tracking-widest mb-4">{t.card_summary}</h3>
             <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                    <span className="text-slate-400">{isRemortgage ? t.label_loan : t.label_loan}</span>
+                    <span className="text-slate-400">{isRemortgage ? t.label_new_loan : t.label_loan}</span>
                     <span className="text-slate-200">{formatCurrency(loanAmount)}</span>
                 </div>
                 {isRemortgage && (

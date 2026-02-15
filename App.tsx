@@ -48,17 +48,16 @@ const App: React.FC = () => {
   }, [fetchedHibor]);
 
   // Effect to calculate total mortgage rate
+  const hRate = (parseFloat(hiborRate.toString()) || 0) + (parseFloat(spreadRate.toString()) || 0);
+  const pRate = Math.max(0, (parseFloat(primeRate.toString()) || 0) - (parseFloat(capSpread.toString()) || 0));
+
   React.useEffect(() => {
     if (rateMode === 'H') {
-      const h = parseFloat(hiborRate.toString()) || 0;
-      const s = parseFloat(spreadRate.toString()) || 0;
-      setMortgageRate(h + s);
+      setMortgageRate(hRate);
     } else {
-      const p = parseFloat(primeRate.toString()) || 0;
-      const cs = parseFloat(capSpread.toString()) || 0;
-      setMortgageRate(Math.max(0, p - cs));
+      setMortgageRate(pRate);
     }
-  }, [hiborRate, spreadRate, primeRate, capSpread, rateMode]);
+  }, [hRate, pRate, rateMode]);
 
   const [mortgageTenure, setMortgageTenure] = useState<number | string>(DEFAULTS.MORTGAGE_TENURE);
   const [isRemortgage, setIsRemortgage] = useState<boolean>(false);
@@ -114,6 +113,7 @@ const App: React.FC = () => {
         handleDownloadPDF={handleDownloadPDF}
         isDownloading={isDownloading}
         hiborDate={fetchedDate || undefined}
+        showSyncStatus={!!hiborRate}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -147,6 +147,8 @@ const App: React.FC = () => {
               setPrimeRate={setPrimeRate}
               capSpread={capSpread}
               setCapSpread={setCapSpread}
+              hRate={hRate}
+              pRate={pRate}
               mortgageRate={mortgageRate} // Pass for display/calc
               setMortgageRate={setMortgageRate}
               mortgageTenure={mortgageTenure}

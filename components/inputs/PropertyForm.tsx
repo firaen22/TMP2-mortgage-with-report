@@ -21,6 +21,8 @@ interface PropertyFormProps {
     setPrimeRate: (val: number | string) => void;
     capSpread: number | string;
     setCapSpread: (val: number | string) => void;
+    hRate: number;
+    pRate: number;
     mortgageTenure: number | string;
     setMortgageTenure: (val: number | string) => void;
     isRemortgage: boolean;
@@ -52,6 +54,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     setPrimeRate,
     capSpread,
     setCapSpread,
+    hRate,
+    pRate,
     mortgageTenure,
     setMortgageTenure,
     isRemortgage,
@@ -130,88 +134,96 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                     </div>
                 </div>
 
-                {/* Rate Section */}
-                <div className="bg-slate-900/30 p-3 rounded-lg border border-white/5 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <label className="block text-xs uppercase tracking-wider text-slate-500">{t.label_rate}</label>
-                        <div className="flex bg-slate-800/50 p-0.5 rounded-md border border-white/5">
-                            <button
-                                onClick={() => setRateMode('H')}
-                                className={`px-3 py-1 text-[10px] uppercase tracking-tight transition-all rounded ${rateMode === 'H' ? 'bg-[#D4AF37] text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                H Plan
-                            </button>
-                            <button
-                                onClick={() => setRateMode('Cap')}
-                                className={`px-3 py-1 text-[10px] uppercase tracking-tight transition-all rounded ${rateMode === 'Cap' ? 'bg-[#D4AF37] text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                Cap Rate
-                            </button>
+                {/* Rate Section (H & P simultaneously) */}
+                <div className="space-y-4">
+                    <label className="block text-xs uppercase tracking-wider text-slate-500">{t.label_rate}</label>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* H Plan Section */}
+                        <div
+                            onClick={() => setRateMode('H')}
+                            className={`p-4 rounded-lg border transition-all cursor-pointer relative ${rateMode === 'H' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/50 ring-1 ring-[#D4AF37]/20' : 'bg-slate-900/30 border-white/5 hover:border-white/10'}`}
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <span className={`text-[10px] uppercase tracking-widest ${rateMode === 'H' ? 'text-[#D4AF37] font-bold' : 'text-slate-500'}`}>H Plan</span>
+                                {hRate < pRate && (
+                                    <span className="text-[8px] px-1.5 py-0.5 bg-[#D4AF37] text-slate-900 font-bold uppercase">{t.label_lower}</span>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label className="block text-[8px] uppercase tracking-wider text-slate-500 mb-1">HIBOR (H)</label>
+                                    <input
+                                        type="number"
+                                        step="0.00001"
+                                        value={hiborRate}
+                                        readOnly={true}
+                                        className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-xs text-slate-400 cursor-not-allowed focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[8px] uppercase tracking-wider text-slate-500 mb-1">Spread</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={spreadRate}
+                                        onChange={(e) => setSpreadRate(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-[#D4AF37]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-end border-t border-white/5 pt-2">
+                                <span className="text-[9px] text-slate-500 uppercase">Effective Rate</span>
+                                <span className="text-xl font-serif text-[#D4AF37]">{hRate.toFixed(3)}%</span>
+                            </div>
+                        </div>
+
+                        {/* Cap Rate Section */}
+                        <div
+                            onClick={() => setRateMode('Cap')}
+                            className={`p-4 rounded-lg border transition-all cursor-pointer relative ${rateMode === 'Cap' ? 'bg-[#D4AF37]/10 border-[#D4AF37]/50 ring-1 ring-[#D4AF37]/20' : 'bg-slate-900/30 border-white/5 hover:border-white/10'}`}
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <span className={`text-[10px] uppercase tracking-widest ${rateMode === 'Cap' ? 'text-[#D4AF37] font-bold' : 'text-slate-500'}`}>Cap Rate</span>
+                                {pRate < hRate && (
+                                    <span className="text-[8px] px-1.5 py-0.5 bg-[#D4AF37] text-slate-900 font-bold uppercase">{t.label_lower}</span>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label className="block text-[8px] uppercase tracking-wider text-slate-500 mb-1">Prime (P)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={primeRate}
+                                        onChange={(e) => setPrimeRate(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-[#D4AF37]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[8px] uppercase tracking-wider text-slate-500 mb-1">Spread (-)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={capSpread}
+                                        onChange={(e) => setCapSpread(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-[#D4AF37]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-end border-t border-white/5 pt-2">
+                                <span className="text-[9px] text-slate-500 uppercase">Effective Rate</span>
+                                <span className="text-xl font-serif text-[#D4AF37]">{pRate.toFixed(3)}%</span>
+                            </div>
                         </div>
                     </div>
-
-                    {rateMode === 'H' ? (
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="col-span-1">
-                                <div className="flex items-center justify-between mb-1">
-                                    <label className="block text-[10px] uppercase tracking-wider text-slate-500" title="HIBOR">HIBOR (H)</label>
-                                    <span className="text-[8px] px-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-none uppercase">{t.status_hibor_live}</span>
-                                </div>
-                                <input
-                                    type="number"
-                                    step="0.00001"
-                                    value={hiborRate}
-                                    readOnly={true}
-                                    className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-400 cursor-not-allowed focus:outline-none"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="Spread">Spread</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={spreadRate}
-                                    onChange={(e) => setSpreadRate(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-[#D4AF37]"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="Total">Total</label>
-                                <div className="w-full bg-slate-800/50 border border-slate-700/50 px-2 py-1.5 text-sm text-[#D4AF37] font-medium">
-                                    {mortgageRate}%
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="col-span-1">
-                                <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="Prime Rate">Prime (P)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={primeRate}
-                                    onChange={(e) => setPrimeRate(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-[#D4AF37]"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="Cap Spread">Spread (-)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={capSpread}
-                                    onChange={(e) => setCapSpread(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-[#D4AF37]"
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="Total">Effective</label>
-                                <div className="w-full bg-slate-800/50 border border-slate-700/50 px-2 py-1.5 text-sm text-[#D4AF37] font-medium">
-                                    {mortgageRate}%
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

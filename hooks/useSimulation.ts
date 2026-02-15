@@ -135,5 +135,5 @@ export const useSimulation = ({
             netMonthlyCashFlow,
             yearlyData
         };
-    }, [propertyValue, mortgageLTV, mortgageRate, mortgageTenure, ownCash, reserveCashPercent, allocationIncome, incomeYield, hedgeYield, allocationHedge]);
+    }, [propertyValue, mortgageLTV, mortgageRate, mortgageTenure, outstandingLoan, ownCash, reserveCashPercent, allocationIncome, incomeYield, hedgeYield, allocationHedge]);
 };
