@@ -8,6 +8,7 @@ interface SimulationInputs {
     mortgageLTV: string | number;
     mortgageRate: string | number;
     mortgageTenure: string | number;
+    outstandingLoan: string | number;
     ownCash: string | number;
     reserveCashPercent: number;
     allocationIncome: number;
@@ -20,6 +21,7 @@ export const useSimulation = ({
     mortgageLTV,
     mortgageRate,
     mortgageTenure,
+    outstandingLoan,
     ownCash,
     reserveCashPercent,
     allocationIncome,
@@ -34,6 +36,7 @@ export const useSimulation = ({
         const valLTV = safeNumber(mortgageLTV);
         const valRate = safeNumber(mortgageRate);
         const valTenure = safeNumber(mortgageTenure);
+        const valOutstanding = safeNumber(outstandingLoan);
         const valOwnCash = safeNumber(ownCash);
 
         // 1. Mortgage Basics
@@ -50,7 +53,8 @@ export const useSimulation = ({
         }
 
         // 2. Investment Split
-        const totalCapital = loanAmount + valOwnCash;
+        const netCashOut = loanAmount - valOutstanding;
+        const totalCapital = netCashOut + valOwnCash;
         const reserveCash = totalCapital * (reserveCashPercent / 100);
         const investedAmount = totalCapital - reserveCash;
 
@@ -121,6 +125,8 @@ export const useSimulation = ({
 
         return {
             loanAmount,
+            outstandingLoan: valOutstanding,
+            netCashOut,
             ownCash: valOwnCash,
             investedAmount,
             reserveCash,

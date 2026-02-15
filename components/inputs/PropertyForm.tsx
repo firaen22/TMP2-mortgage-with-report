@@ -23,6 +23,10 @@ interface PropertyFormProps {
     setCapSpread: (val: number | string) => void;
     mortgageTenure: number | string;
     setMortgageTenure: (val: number | string) => void;
+    isRemortgage: boolean;
+    setIsRemortgage: (val: boolean) => void;
+    outstandingLoan: number | string;
+    setOutstandingLoan: (val: number | string) => void;
     ownCash: number | string;
     setOwnCash: (val: number | string) => void;
     reserveCashPercent: number;
@@ -50,6 +54,10 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     setCapSpread,
     mortgageTenure,
     setMortgageTenure,
+    isRemortgage,
+    setIsRemortgage,
+    outstandingLoan,
+    setOutstandingLoan,
     ownCash,
     setOwnCash,
     reserveCashPercent,
@@ -64,17 +72,49 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
             </div>
 
             <div className="space-y-6">
-                <div className="group">
-                    <label className="block text-xs uppercase tracking-wider text-slate-500 mb-2 group-focus-within:text-[#D4AF37] transition-colors">{t.label_valuation}</label>
-                    <div className="relative">
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-500 text-lg font-serif">{t.currency}</span>
+                {/* Property Value Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <label className="block text-xs uppercase tracking-wider text-slate-500">{t.label_property_value}</label>
+
+                        {/* Remortgage Toggle */}
+                        <div className="flex items-center gap-2 bg-slate-800/50 p-1 rounded border border-white/5">
+                            <span className={`text-[10px] uppercase tracking-tighter ${!isRemortgage ? 'text-[#D4AF37] font-bold' : 'text-slate-500'}`}>{t.label_full_paid}</span>
+                            <button
+                                onClick={() => setIsRemortgage(!isRemortgage)}
+                                className="relative w-8 h-4 bg-slate-700 rounded-full transition-colors focus:outline-none"
+                            >
+                                <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${isRemortgage ? 'translate-x-4' : 'translate-x-0'}`} />
+                            </button>
+                            <span className={`text-[10px] uppercase tracking-tighter ${isRemortgage ? 'text-[#D4AF37] font-bold' : 'text-slate-500'}`}>{t.label_remortgage}</span>
+                        </div>
+                    </div>
+
+                    <div className="relative group">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">HKD</span>
                         <input
                             type="number"
                             value={propertyValue}
                             onChange={(e) => setPropertyValue(e.target.value)}
-                            className="w-full pl-12 bg-transparent border-b border-slate-700 py-2 text-xl font-serif text-slate-100 focus:outline-none focus:border-[#D4AF37] transition-all"
+                            className="w-full bg-slate-900/50 border border-slate-700 px-12 py-3 text-2xl font-serif text-slate-100 focus:outline-none focus:border-[#D4AF37] transition-all"
                         />
                     </div>
+
+                    {/* Conditional Outstanding Loan Input */}
+                    {isRemortgage && (
+                        <div className="bg-slate-900/40 p-3 rounded-lg border border-[#D4AF37]/20 space-y-2 animate-in fade-in slide-in-from-top-2">
+                            <label className="block text-xs uppercase tracking-wider text-[#D4AF37]">{t.label_outstanding_loan}</label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">HKD</span>
+                                <input
+                                    type="number"
+                                    value={outstandingLoan}
+                                    onChange={(e) => setOutstandingLoan(e.target.value)}
+                                    className="w-full bg-slate-900/60 border border-slate-700 px-12 py-2 text-lg font-serif text-slate-100 focus:outline-none focus:border-[#D4AF37]"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="group">
@@ -113,13 +153,16 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                     {rateMode === 'H' ? (
                         <div className="grid grid-cols-3 gap-3">
                             <div className="col-span-1">
-                                <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="HIBOR">HIBOR (H)</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-[10px] uppercase tracking-wider text-slate-500" title="HIBOR">HIBOR (H)</label>
+                                    <span className="text-[8px] px-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-none uppercase">{t.status_hibor_live}</span>
+                                </div>
                                 <input
                                     type="number"
-                                    step="0.01"
+                                    step="0.00001"
                                     value={hiborRate}
-                                    onChange={(e) => setHiborRate(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-[#D4AF37]"
+                                    readOnly={true}
+                                    className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-400 cursor-not-allowed focus:outline-none"
                                 />
                             </div>
                             <div className="col-span-1">
@@ -181,7 +224,6 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                             className="w-full bg-slate-900/50 border border-slate-700 px-2 py-2 text-slate-100 focus:outline-none focus:border-[#D4AF37]"
                         />
                     </div>
-                    {/* Removed single rate input */}
                     <div className="col-span-1">
                         <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-2 truncate" title={t.label_tenure}>{t.label_tenure}</label>
                         <input
@@ -210,6 +252,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 </div>
             </div>
         </GlassCard>
+
     );
 };
 

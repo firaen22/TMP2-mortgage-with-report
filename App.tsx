@@ -61,6 +61,8 @@ const App: React.FC = () => {
   }, [hiborRate, spreadRate, primeRate, capSpread, rateMode]);
 
   const [mortgageTenure, setMortgageTenure] = useState<number | string>(DEFAULTS.MORTGAGE_TENURE);
+  const [isRemortgage, setIsRemortgage] = useState<boolean>(false);
+  const [outstandingLoan, setOutstandingLoan] = useState<number | string>(DEFAULTS.OUTSTANDING_LOAN);
   const [ownCash, setOwnCash] = useState<number | string>(0);
   const [reserveCashPercent, setReserveCashPercent] = useState<number>(0);
 
@@ -85,6 +87,7 @@ const App: React.FC = () => {
     mortgageLTV,
     mortgageRate,
     mortgageTenure,
+    outstandingLoan: isRemortgage ? outstandingLoan : 0,
     ownCash,
     reserveCashPercent,
     allocationIncome,
@@ -148,6 +151,10 @@ const App: React.FC = () => {
               setMortgageRate={setMortgageRate}
               mortgageTenure={mortgageTenure}
               setMortgageTenure={setMortgageTenure}
+              isRemortgage={isRemortgage}
+              setIsRemortgage={setIsRemortgage}
+              outstandingLoan={outstandingLoan}
+              setOutstandingLoan={setOutstandingLoan}
               ownCash={ownCash}
               setOwnCash={setOwnCash}
               reserveCashPercent={reserveCashPercent}
@@ -158,6 +165,8 @@ const App: React.FC = () => {
             <SummaryCard
               t={t}
               loanAmount={result.loanAmount}
+              outstandingLoan={result.outstandingLoan}
+              isRemortgage={isRemortgage}
               ownCash={result.ownCash}
               investedAmount={result.investedAmount}
               reserveCash={result.reserveCash}

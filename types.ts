@@ -19,6 +19,8 @@ export interface SimulationYear {
 
 export interface CalculationResult {
   loanAmount: number;
+  outstandingLoan: number;
+  netCashOut: number;
   ownCash: number;
   investedAmount: number;
   reserveCash: number;
