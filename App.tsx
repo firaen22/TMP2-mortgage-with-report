@@ -26,15 +26,18 @@ const App: React.FC = () => {
   const t = TRANSLATIONS[lang];
 
   // --- HIBOR Data ---
-  const { hiborRate: fetchedHibor, loading: hiborLoading } = useHiborRate();
+  const { hiborRate: fetchedHibor, hiborDate: fetchedDate, loading: hiborLoading } = useHiborRate();
 
   // --- Input State ---
   const [propertyValue, setPropertyValue] = useState<number | string>(DEFAULTS.PROPERTY_VALUE);
   const [mortgageLTV, setMortgageLTV] = useState<number | string>(DEFAULTS.MORTGAGE_LTV);
 
-  // Split Mortgage Rate into HIBOR + Spread
+  // Split Mortgage Rate into HIBOR + Spread + Cap
+  const [rateMode, setRateMode] = useState<'H' | 'Cap'>('H');
   const [hiborRate, setHiborRate] = useState<number | string>(0);
   const [spreadRate, setSpreadRate] = useState<number | string>(1.3); // Default spread
+  const [primeRate, setPrimeRate] = useState<number | string>(5.0);
+  const [capSpread, setCapSpread] = useState<number | string>(1.75);
   const [mortgageRate, setMortgageRate] = useState<number | string>(DEFAULTS.MORTGAGE_RATE);
 
   // Effect to update HIBOR when fetched
@@ -46,10 +49,16 @@ const App: React.FC = () => {
 
   // Effect to calculate total mortgage rate
   React.useEffect(() => {
-    const h = parseFloat(hiborRate.toString()) || 0;
-    const s = parseFloat(spreadRate.toString()) || 0;
-    setMortgageRate(h + s);
-  }, [hiborRate, spreadRate]);
+    if (rateMode === 'H') {
+      const h = parseFloat(hiborRate.toString()) || 0;
+      const s = parseFloat(spreadRate.toString()) || 0;
+      setMortgageRate(h + s);
+    } else {
+      const p = parseFloat(primeRate.toString()) || 0;
+      const cs = parseFloat(capSpread.toString()) || 0;
+      setMortgageRate(Math.max(0, p - cs));
+    }
+  }, [hiborRate, spreadRate, primeRate, capSpread, rateMode]);
 
   const [mortgageTenure, setMortgageTenure] = useState<number | string>(DEFAULTS.MORTGAGE_TENURE);
   const [ownCash, setOwnCash] = useState<number | string>(0);
@@ -101,6 +110,7 @@ const App: React.FC = () => {
         setLang={setLang}
         handleDownloadPDF={handleDownloadPDF}
         isDownloading={isDownloading}
+        hiborDate={fetchedDate || undefined}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -124,12 +134,18 @@ const App: React.FC = () => {
               setPropertyValue={setPropertyValue}
               mortgageLTV={mortgageLTV}
               setMortgageLTV={setMortgageLTV}
+              rateMode={rateMode}
+              setRateMode={setRateMode}
               hiborRate={hiborRate}
               setHiborRate={setHiborRate}
               spreadRate={spreadRate}
               setSpreadRate={setSpreadRate}
+              primeRate={primeRate}
+              setPrimeRate={setPrimeRate}
+              capSpread={capSpread}
+              setCapSpread={setCapSpread}
               mortgageRate={mortgageRate} // Pass for display/calc
-              setMortgageRate={setMortgageRate} // Keep for backward compatibility if needed, though we primarily set H+S now
+              setMortgageRate={setMortgageRate}
               mortgageTenure={mortgageTenure}
               setMortgageTenure={setMortgageTenure}
               ownCash={ownCash}

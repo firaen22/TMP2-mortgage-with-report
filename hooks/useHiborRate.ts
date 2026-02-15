@@ -13,6 +13,7 @@ interface HiborData {
 
 export const useHiborRate = () => {
     const [hiborRate, setHiborRate] = useState<number | null>(null);
+    const [hiborDate, setHiborDate] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -28,8 +29,9 @@ export const useHiborRate = () => {
                     const now = new Date().getTime();
 
                     if (now - parsedData.timestamp < CACHE_DURATION) {
-                        console.log('Using cached HIBOR rate:', parsedData.rate);
+                        console.log('Using cached HIBOR rate:', parsedData.rate, 'from', parsedData.date);
                         setHiborRate(parsedData.rate);
+                        setHiborDate(parsedData.date);
                         setLoading(false);
                         return;
                     }
@@ -62,6 +64,7 @@ export const useHiborRate = () => {
 
                         localStorage.setItem(CACHE_KEY, JSON.stringify(newCacheData));
                         setHiborRate(rate);
+                        setHiborDate(date);
                     } else {
                         throw new Error('Invalid rate format received');
                     }
@@ -81,5 +84,5 @@ export const useHiborRate = () => {
         fetchHiborRate();
     }, []);
 
-    return { hiborRate, loading, error };
+    return { hiborRate, hiborDate, loading, error };
 };

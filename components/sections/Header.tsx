@@ -8,9 +8,10 @@ interface HeaderProps {
     setLang: (lang: 'zh' | 'en') => void;
     handleDownloadPDF: () => void;
     isDownloading: boolean;
+    hiborDate?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ t, lang, setLang, handleDownloadPDF, isDownloading }) => {
+const Header: React.FC<HeaderProps> = ({ t, lang, setLang, handleDownloadPDF, isDownloading, hiborDate }) => {
     return (
         <nav className="border-b border-white/5 bg-slate-900/80 backdrop-blur-md sticky top-0 z-[40]">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -22,7 +23,14 @@ const Header: React.FC<HeaderProps> = ({ t, lang, setLang, handleDownloadPDF, is
                         <h1 className="text-2xl font-serif text-slate-100 tracking-wide">
                             {t.title}
                         </h1>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{t.subtitle}</p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{t.subtitle}</p>
+                            {hiborDate && (
+                                <span className="text-[9px] text-slate-600 bg-slate-800/50 px-1.5 py-0.5 border border-white/5 rounded-none uppercase tracking-wider">
+                                    HIBOR Update: {hiborDate}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
