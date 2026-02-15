@@ -6,6 +6,7 @@ import { DEFAULTS } from './constants';
 import { usePortfolio } from './hooks/usePortfolio';
 import { useSimulation } from './hooks/useSimulation';
 import { usePDFReport } from './hooks/usePDFReport';
+import { useHiborRate } from './hooks/useHiborRate';
 
 // Components
 import Header from './components/sections/Header';
@@ -24,10 +25,32 @@ const App: React.FC = () => {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const t = TRANSLATIONS[lang];
 
+  // --- HIBOR Data ---
+  const { hiborRate: fetchedHibor, loading: hiborLoading } = useHiborRate();
+
   // --- Input State ---
   const [propertyValue, setPropertyValue] = useState<number | string>(DEFAULTS.PROPERTY_VALUE);
   const [mortgageLTV, setMortgageLTV] = useState<number | string>(DEFAULTS.MORTGAGE_LTV);
+
+  // Split Mortgage Rate into HIBOR + Spread
+  const [hiborRate, setHiborRate] = useState<number | string>(0);
+  const [spreadRate, setSpreadRate] = useState<number | string>(1.3); // Default spread
   const [mortgageRate, setMortgageRate] = useState<number | string>(DEFAULTS.MORTGAGE_RATE);
+
+  // Effect to update HIBOR when fetched
+  React.useEffect(() => {
+    if (fetchedHibor !== null) {
+      setHiborRate(fetchedHibor);
+    }
+  }, [fetchedHibor]);
+
+  // Effect to calculate total mortgage rate
+  React.useEffect(() => {
+    const h = parseFloat(hiborRate.toString()) || 0;
+    const s = parseFloat(spreadRate.toString()) || 0;
+    setMortgageRate(h + s);
+  }, [hiborRate, spreadRate]);
+
   const [mortgageTenure, setMortgageTenure] = useState<number | string>(DEFAULTS.MORTGAGE_TENURE);
   const [ownCash, setOwnCash] = useState<number | string>(0);
   const [reserveCashPercent, setReserveCashPercent] = useState<number>(0);
@@ -101,8 +124,12 @@ const App: React.FC = () => {
               setPropertyValue={setPropertyValue}
               mortgageLTV={mortgageLTV}
               setMortgageLTV={setMortgageLTV}
-              mortgageRate={mortgageRate}
-              setMortgageRate={setMortgageRate}
+              hiborRate={hiborRate}
+              setHiborRate={setHiborRate}
+              spreadRate={spreadRate}
+              setSpreadRate={setSpreadRate}
+              mortgageRate={mortgageRate} // Pass for display/calc
+              setMortgageRate={setMortgageRate} // Keep for backward compatibility if needed, though we primarily set H+S now
               mortgageTenure={mortgageTenure}
               setMortgageTenure={setMortgageTenure}
               ownCash={ownCash}

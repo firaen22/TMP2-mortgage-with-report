@@ -11,6 +11,10 @@ interface PropertyFormProps {
     setMortgageLTV: (val: number | string) => void;
     mortgageRate: number | string;
     setMortgageRate: (val: number | string) => void;
+    hiborRate: number | string;
+    setHiborRate: (val: number | string) => void;
+    spreadRate: number | string;
+    setSpreadRate: (val: number | string) => void;
     mortgageTenure: number | string;
     setMortgageTenure: (val: number | string) => void;
     ownCash: number | string;
@@ -28,6 +32,10 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
     setMortgageLTV,
     mortgageRate,
     setMortgageRate,
+    hiborRate,
+    setHiborRate,
+    spreadRate,
+    setSpreadRate,
     mortgageTenure,
     setMortgageTenure,
     ownCash,
@@ -70,7 +78,40 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                {/* Rate Section */}
+                <div className="bg-slate-900/30 p-3 rounded-lg border border-white/5 space-y-3">
+                    <label className="block text-xs uppercase tracking-wider text-slate-500">{t.label_rate}</label>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="col-span-1">
+                            <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="HIBOR">HIBOR (H)</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={hiborRate}
+                                onChange={(e) => setHiborRate(e.target.value)}
+                                className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-[#D4AF37]"
+                            />
+                        </div>
+                        <div className="col-span-1">
+                            <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="Spread">Spread</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={spreadRate}
+                                onChange={(e) => setSpreadRate(e.target.value)}
+                                className="w-full bg-slate-900/50 border border-slate-700 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-[#D4AF37]"
+                            />
+                        </div>
+                        <div className="col-span-1">
+                            <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-1" title="Total">Total</label>
+                            <div className="w-full bg-slate-800/50 border border-slate-700/50 px-2 py-1.5 text-sm text-[#D4AF37] font-medium">
+                                {mortgageRate}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-1">
                         <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-2 truncate" title={t.label_ltv}>{t.label_ltv}</label>
                         <input
@@ -80,16 +121,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                             className="w-full bg-slate-900/50 border border-slate-700 px-2 py-2 text-slate-100 focus:outline-none focus:border-[#D4AF37]"
                         />
                     </div>
-                    <div className="col-span-1">
-                        <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-2 truncate" title={t.label_rate}>{t.label_rate}</label>
-                        <input
-                            type="number"
-                            step="0.1"
-                            value={mortgageRate}
-                            onChange={(e) => setMortgageRate(e.target.value)}
-                            className="w-full bg-slate-900/50 border border-slate-700 px-2 py-2 text-slate-100 focus:outline-none focus:border-[#D4AF37]"
-                        />
-                    </div>
+                    {/* Removed single rate input */}
                     <div className="col-span-1">
                         <label className="block text-[10px] uppercase tracking-wider text-slate-500 mb-2 truncate" title={t.label_tenure}>{t.label_tenure}</label>
                         <input
