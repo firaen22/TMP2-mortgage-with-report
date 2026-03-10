@@ -7,6 +7,7 @@ import { usePortfolio } from './hooks/usePortfolio';
 import { useSimulation } from './hooks/useSimulation';
 import { usePDFReport } from './hooks/usePDFReport';
 import { useHiborRate } from './hooks/useHiborRate';
+import { useYahooFinanceYields } from './hooks/useYahooFinanceYields';
 
 // Components
 import Header from './components/sections/Header';
@@ -27,6 +28,14 @@ const App: React.FC = () => {
 
   // --- HIBOR Data ---
   const { hiborRate: fetchedHibor, hiborDate: fetchedDate, loading: hiborLoading } = useHiborRate();
+
+  // --- Yahoo Finance Yields ---
+  const {
+    yields: liveYields,
+    date: yieldsDate,
+    loading: yieldsLoading,
+    isLive: yieldsIsLive,
+  } = useYahooFinanceYields();
 
   // --- Input State ---
   const [propertyValue, setPropertyValue] = useState<number | string>(DEFAULTS.PROPERTY_VALUE);
@@ -67,6 +76,7 @@ const App: React.FC = () => {
 
   // --- Portfolio Logic ---
   const {
+    FUNDS,
     activeTab,
     setActiveTab,
     allocationIncome,
@@ -78,7 +88,7 @@ const App: React.FC = () => {
     incomeStats,
     hedgeStats,
     overallYield
-  } = usePortfolio();
+  } = usePortfolio({ liveYields });
 
   // --- Simulation Logic ---
   const result = useSimulation({
@@ -114,6 +124,9 @@ const App: React.FC = () => {
         isDownloading={isDownloading}
         hiborDate={fetchedDate || undefined}
         showSyncStatus={!!hiborRate}
+        yieldsDate={yieldsDate || undefined}
+        yieldsLoading={yieldsLoading}
+        yieldsIsLive={yieldsIsLive}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -176,6 +189,9 @@ const App: React.FC = () => {
 
             <AllocationForm
               t={t}
+              funds={FUNDS}
+              yieldsLoading={yieldsLoading}
+              yieldsIsLive={yieldsIsLive}
               allocationIncome={allocationIncome}
               setAllocationIncome={setAllocationIncome}
               allocationHedge={allocationHedge}

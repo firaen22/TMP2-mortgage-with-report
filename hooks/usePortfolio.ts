@@ -1,8 +1,18 @@
 import { useState, useMemo } from 'react';
-import { FUNDS, DEFAULTS } from '../constants';
+import { DEFAULTS, FALLBACK_YIELDS, buildFunds } from '../constants';
+import { Fund } from '../types';
 import { safeNumber } from '../utils/helpers';
 
-export const usePortfolio = () => {
+export interface UsePortfolioOptions {
+    liveYields?: Record<string, number>;
+}
+
+export const usePortfolio = (options: UsePortfolioOptions = {}) => {
+    const { liveYields } = options;
+
+    // Build fund list from live yields (or fallback) — re-computed whenever yields change
+    const FUNDS: Fund[] = useMemo(() => buildFunds(liveYields), [liveYields]);
+
     // Tab state
     const [activeTab, setActiveTab] = useState<'income' | 'hedge'>('income');
 
@@ -13,7 +23,7 @@ export const usePortfolio = () => {
     // Fund Allocations
     const [incomeAllocations, setIncomeAllocations] = useState<Record<string, string | number>>(() => {
         const initial: Record<string, string | number> = {};
-        FUNDS.forEach((f, index) => {
+        buildFunds().forEach((f, index) => {
             initial[f.id] = index === 0 ? 100 : 0;
         });
         return initial;
@@ -21,17 +31,17 @@ export const usePortfolio = () => {
 
     const [hedgeAllocations, setHedgeAllocations] = useState<Record<string, string | number>>(() => {
         const initial: Record<string, string | number> = {};
-        FUNDS.forEach((f, index) => {
+        buildFunds().forEach((f, index) => {
             initial[f.id] = index === 0 ? 100 : 0;
         });
         return initial;
     });
 
     // Helper Calculation
-    const calculatePortfolioYield = (allocations: Record<string, string | number>) => {
+    const calculatePortfolioYield = (allocations: Record<string, string | number>, funds: Fund[]) => {
         let total = 0;
         let weightedYield = 0;
-        FUNDS.forEach(fund => {
+        funds.forEach(fund => {
             const alloc = safeNumber(allocations[fund.id]);
             total += alloc;
             weightedYield += fund.yield * (alloc / 100);
@@ -39,8 +49,14 @@ export const usePortfolio = () => {
         return { totalAllocation: total, yield: weightedYield };
     };
 
-    const incomeStats = useMemo(() => calculatePortfolioYield(incomeAllocations), [incomeAllocations]);
-    const hedgeStats = useMemo(() => calculatePortfolioYield(hedgeAllocations), [hedgeAllocations]);
+    const incomeStats = useMemo(
+        () => calculatePortfolioYield(incomeAllocations, FUNDS),
+        [incomeAllocations, FUNDS]
+    );
+    const hedgeStats = useMemo(
+        () => calculatePortfolioYield(hedgeAllocations, FUNDS),
+        [hedgeAllocations, FUNDS]
+    );
 
     const overallYield = useMemo(() => {
         return (allocationIncome * incomeStats.yield + (100 - allocationIncome) * hedgeStats.yield) / 100;
@@ -72,6 +88,7 @@ export const usePortfolio = () => {
     };
 
     return {
+        FUNDS,
         activeTab,
         setActiveTab,
         allocationIncome,

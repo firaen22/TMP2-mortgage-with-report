@@ -1,11 +1,15 @@
 import React from 'react';
-import { PieChart as PieIcon } from 'lucide-react';
+import { PieChart as PieIcon, Loader2 } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import { formatCurrency, safeNumber } from '../../utils/helpers';
-import { FUNDS, COLORS } from '../../constants';
+import { COLORS } from '../../constants';
+import { Fund } from '../../types';
 
 interface AllocationFormProps {
     t: any;
+    funds: Fund[];
+    yieldsLoading?: boolean;
+    yieldsIsLive?: boolean;
     allocationIncome: number;
     setAllocationIncome: (val: number) => void;
     allocationHedge: number;
@@ -21,6 +25,9 @@ interface AllocationFormProps {
 
 const AllocationForm: React.FC<AllocationFormProps> = ({
     t,
+    funds,
+    yieldsLoading,
+    yieldsIsLive,
     allocationIncome,
     setAllocationIncome,
     allocationHedge,
@@ -42,17 +49,36 @@ const AllocationForm: React.FC<AllocationFormProps> = ({
 
         return (
             <div className="mt-4 p-4 border border-white/10 bg-black/20">
+                {/* Fund list header with yields status badge */}
                 <div className="flex justify-between items-center mb-4">
-                    <label className="text-sm font-serif tracking-wide text-slate-300">
-                        {isIncome ? t.tab_income : t.tab_hedge}
-                    </label>
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm font-serif tracking-wide text-slate-300">
+                            {isIncome ? t.tab_income : t.tab_hedge}
+                        </label>
+                        {/* Yields status badge */}
+                        {yieldsLoading ? (
+                            <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 bg-slate-800/50 text-slate-400 border border-white/5 uppercase tracking-wider">
+                                <Loader2 size={8} className="animate-spin" />
+                                Fetching yields…
+                            </span>
+                        ) : yieldsIsLive ? (
+                            <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                                Live Yields
+                            </span>
+                        ) : (
+                            <span className="text-[9px] px-1.5 py-0.5 bg-slate-800/50 text-slate-500 border border-white/5 uppercase tracking-wider">
+                                Static Yields
+                            </span>
+                        )}
+                    </div>
                     <div className={`text-xs px-2 py-0.5 border ${stats.totalAllocation === 100 ? 'border-emerald-500/50 text-emerald-400' : 'border-amber-500/50 text-amber-400'}`}>
                         {t.label_total_alloc}: {stats.totalAllocation}%
                     </div>
                 </div>
 
                 <div className="space-y-4">
-                    {FUNDS.map(fund => {
+                    {funds.map(fund => {
                         const currentVal = allocations[fund.id];
                         // Provide a value that React Input can handle (string or number, but never undefined/null to avoid uncontrolled warning)
                         const inputValue = currentVal === undefined ? 0 : currentVal;
@@ -64,7 +90,19 @@ const AllocationForm: React.FC<AllocationFormProps> = ({
                                         {/*@ts-ignore*/}
                                         {t.funds[fund.id] || fund.name}
                                     </span>
-                                    <span className="text-xs text-slate-400 border border-slate-700 px-1.5">{fund.yield}%</span>
+                                    {/* Three-state yield badge */}
+                                    {yieldsLoading ? (
+                                        <span className="flex items-center gap-1 text-xs text-slate-500 border border-slate-700 px-1.5">
+                                            <Loader2 size={9} className="animate-spin" />
+                                        </span>
+                                    ) : yieldsIsLive ? (
+                                        <span className="flex items-center gap-1 text-xs text-emerald-400 border border-emerald-700/40 px-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                                            {fund.yield}%
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs text-slate-400 border border-slate-700 px-1.5">{fund.yield}%</span>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <input

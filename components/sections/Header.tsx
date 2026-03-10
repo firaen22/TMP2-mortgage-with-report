@@ -9,9 +9,24 @@ interface HeaderProps {
     handleDownloadPDF: () => void;
     isDownloading: boolean;
     hiborDate?: string;
+    showSyncStatus?: boolean;
+    yieldsDate?: string;
+    yieldsLoading?: boolean;
+    yieldsIsLive?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ t, lang, setLang, handleDownloadPDF, isDownloading, hiborDate, showSyncStatus }) => {
+const Header: React.FC<HeaderProps> = ({
+    t,
+    lang,
+    setLang,
+    handleDownloadPDF,
+    isDownloading,
+    hiborDate,
+    showSyncStatus,
+    yieldsDate,
+    yieldsLoading,
+    yieldsIsLive,
+}) => {
     return (
         <nav className="border-b border-white/5 bg-slate-900/80 backdrop-blur-md sticky top-0 z-[40]">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -23,8 +38,10 @@ const Header: React.FC<HeaderProps> = ({ t, lang, setLang, handleDownloadPDF, is
                         <h1 className="text-2xl font-serif text-slate-100 tracking-wide">
                             {t.title}
                         </h1>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{t.subtitle}</p>
+
+                            {/* HIBOR status badge */}
                             {hiborDate && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-[9px] text-slate-600 bg-slate-800/50 px-1.5 py-0.5 border border-white/5 rounded-none uppercase tracking-wider">
@@ -37,6 +54,19 @@ const Header: React.FC<HeaderProps> = ({ t, lang, setLang, handleDownloadPDF, is
                                     )}
                                 </div>
                             )}
+
+                            {/* Yields status badge */}
+                            {yieldsLoading ? (
+                                <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 bg-slate-800/50 text-slate-400 border border-white/5 uppercase tracking-wider">
+                                    <Loader2 size={8} className="animate-spin" />
+                                    Fetching yields…
+                                </span>
+                            ) : yieldsIsLive && yieldsDate ? (
+                                <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase tracking-wider">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                                    Yields Live: {yieldsDate}
+                                </span>
+                            ) : null}
                         </div>
                     </div>
                 </div>
